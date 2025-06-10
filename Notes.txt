@@ -1,5 +1,5 @@
 
-BMI160 chip shcematic:
+BMI160 chip schematic:
 
 See:
 https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmi160-ds000.pdf
@@ -10,13 +10,42 @@ MOSI for SPI4
 SISO for SPI3
 SDA for I2C
 
-pin to breakout transaltions for BMI160:
-SDO: grounded
-ASDX: SDX
-ASCX: CS
+
+~~~~~~~~~~~~~~~~~~~~~
+pin to breakout translations for BMI160:
+[chip pin]: [breakout pin]
+SDO: SAO (main i2c address, pulled up)
+ASDX: SDX (magnetometer i2c, no resistor)
+ASCX: SCX (magnetometer i2c, no resistor)
 INT1: INT1
+VDDIO: Regulated Vin (from LDO) - VIN
+GNDIO: GND
+GND: GND
+VDD: Regulated Vin (from LDO) - VIN
 INT2: INT2
-ODSO: OCS
+OSCB: OCS (for OCS interface, not really used)
+OSDO: Not Connected
+CSB: CS (chip select for main SPI, pulled up)
+SCX: SCL (main i2c, pulled up)
+SDX: SDA (main i2c, pulled up)
+
+x4 capacitors between positive and ground
+x4 392 resistors, 2 for i2c, and 2 for CS and SAO
+~~~~~~~~~~~~~~~~~~~~~
+
+The GY-271/3 is much more basic;
+5-pin interface:
+[breakout pin]
+VCC (regulated, 3-5V)
+GND
+SCL (pulled up, in 271, this is boosted to vin levels)
+SDA (Pulled up, in 271, this is boosted to vin levels)
+DRDY (direct from chip)
+
+~~~~~~~~~~~~~~~~~~~~~
+
+
+
 
 good battery type:
 804040
@@ -25,7 +54,7 @@ or 804050
 [80]4050
 
 
-GY-271 magnometer breakout info
+GY-271 magnetometer breakout info
 See:
 http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module
 
@@ -37,11 +66,11 @@ https://github.com/SlimeVR/SlimeVR-Tracker-ESP/issues/300
 The charger modules:
 LX-LBES - brand name
 
-simmilar variants:
+similar variants:
 LN-MLIC
 LX-LBC3
 
-the aliexpress couterpart is commonly called the the "TP4057"
+the aliexpress counterpart is commonly called the the "TP4057"
 
 good site that provides some info on the components on this module:
 https://www.adrirobot.it/caricabatteria-litio-li-ion-step-up-boost-4-28v-regolabile/
@@ -93,8 +122,24 @@ https://www.mattmillman.com/info/crimpconnectors/common-jst-connector-types/
 JST 2.5mm (probably the cheapest and most universal, XH)
 or JST 2mm - (ph connector)
 or JST ZH ()
+jst PH20
 
 or JST 1.25mm
+Mini Micro JST-1.25mm
+
+
+or 5264 connector
+
+or headphone jack (2.5mm)!
+PJ-210B
+PJ-320A
+(these may have a shorting problem... I need to either look into the safest way of routing connections or use a different connector.
+A disappointment because otherwise, they're perfect for my needs)
+
+
+A USB connector that's obscure so people don't try to plug in a generic connector to it
+Mini USB 8P
+
 
 
 

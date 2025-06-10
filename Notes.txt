@@ -1,0 +1,101 @@
+
+BMI160 chip shcematic:
+
+See:
+https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmi160-ds000.pdf
+SCX is the clock for SPI/I2C
+
+SDX is:
+MOSI for SPI4
+SISO for SPI3
+SDA for I2C
+
+pin to breakout transaltions for BMI160:
+SDO: grounded
+ASDX: SDX
+ASCX: CS
+INT1: INT1
+INT2: INT2
+ODSO: OCS
+
+good battery type:
+804040
+or 804050
+[8mm][40mm][50mm]
+[80]4050
+
+
+GY-271 magnometer breakout info
+See:
+http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module
+
+
+configuring tracker firmware to work with this hardware (BMI160 + HMC/QMC magnetometer)
+https://github.com/SlimeVR/SlimeVR-Tracker-ESP/issues/300
+
+
+The charger modules:
+LX-LBES - brand name
+
+simmilar variants:
+LN-MLIC
+LX-LBC3
+
+the aliexpress couterpart is commonly called the the "TP4057"
+
+good site that provides some info on the components on this module:
+https://www.adrirobot.it/caricabatteria-litio-li-ion-step-up-boost-4-28v-regolabile/
+
+switch footprint:
+SS12D10 //flat, not as good, can be bumped and turned off
+or
+SS12D06 //90 deg
+
+
+some useful info on charging the module:
+https://forum.arduino.cc/t/charging-lithium-ion-battery-using-the-usb-port-on-esp32-c3-supermini-with-tp4056-and-powering-the-esp32-with-the-battery-when-not-connected-via-usb/1302012/3
+
+
+intended behavior:
+
+plugging in device will power it up and charge it, regardless of switch state
+
+battery will only discharge when switch is ON.
+battery should be able to be charged regardless of switch state.
+
+
+using a single connector (data + battery) will mean 
+
+
+alternatives to the c3 supermini:
+ESP32-C3-Zero Pro Mini (bigger PCB antenna, potentially easier to swap to the external one... but that may not be needed, as seen by some tests by others)
+
+https://peterneufeld.wordpress.com/2025/03/04/esp32-c3-supermini-antenna-modification/
+
+Other names for this board:
+New Micro ESP32-C3
+ESP32-C3_Mini_V1
+
+May need:
+uFL antenna 2.4g
+
+
+If I have gobs of time, (I don't), this would also be interesting to look into for bad wi-fi connections
+https://github.com/martin-ger/esp32_nat_router
+https://randomnerdtutorials.com/esp32-esp-now-wi-fi-web-server/
+https://www.reddit.com/r/esp32/comments/18y9fq0/esp32_connecting_to_a_wifi_network_and_espnow_at/
+We could also use esp-now and serial to send packets directly to the handler device without having to go through a home wifi network first
+
+
+potential connector types:
+https://www.mattmillman.com/info/crimpconnectors/common-jst-connector-types/
+
+JST 2.5mm (probably the cheapest and most universal, XH)
+or JST 2mm - (ph connector)
+or JST ZH ()
+
+or JST 1.25mm
+
+
+
+

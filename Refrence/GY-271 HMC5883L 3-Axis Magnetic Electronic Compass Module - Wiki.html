@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html lang="en" dir="ltr" class="client-js"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module - Wiki</title>
+<meta name="generator" content="MediaWiki 1.25.2">
+<link rel="shortcut icon" href="http://wiki.sunfounder.cc/favicon.ico">
+<link rel="search" type="application/opensearchdescription+xml" href="http://wiki.sunfounder.cc/opensearch_desc.php" title="Wiki (en)">
+<link rel="EditURI" type="application/rsd+xml" href="http://wiki.sunfounder.cc/api.php?action=rsd">
+<link rel="alternate" hreflang="x-default" href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module">
+<link rel="alternate" type="application/atom+xml" title="Wiki Atom feed" href="http://wiki.sunfounder.cc/index.php?title=Special:RecentChanges&amp;feed=atom">
+<link rel="stylesheet" href="./GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module - Wiki_files/load.php">
+<style>
+.mw-collapsible-toggle{float:right;-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;user-select:none}  .mw-content-ltr .mw-collapsible-toggle,.mw-content-rtl .mw-content-ltr .mw-collapsible-toggle{float:right} .mw-content-rtl .mw-collapsible-toggle,.mw-content-ltr .mw-content-rtl .mw-collapsible-toggle{float:left}.mw-customtoggle,.mw-collapsible-toggle{cursor:pointer} caption .mw-collapsible-toggle,.mw-content-ltr caption .mw-collapsible-toggle,.mw-content-rtl caption .mw-collapsible-toggle,.mw-content-rtl .mw-content-ltr caption .mw-collapsible-toggle,.mw-content-ltr .mw-content-rtl caption .mw-collapsible-toggle{float:none} li .mw-collapsible-toggle,.mw-content-ltr li .mw-collapsible-toggle,.mw-content-rtl li .mw-collapsible-toggle,.mw-content-rtl .mw-content-ltr li .mw-collapsible-toggle,.mw-content-ltr .mw-content-rtl li .mw-collapsible-toggle{float:none} .mw-collapsible-toggle-li{list-style:none}
+/* cache key: mzt54542_wiki:resourceloader:filter:minify-css:7:e1ffd603cbaaa5f1a36e0d13fe843535 */
+.suggestions{overflow:hidden;position:absolute;top:0;left:0;width:0;border:none;z-index:1099;padding:0;margin:-1px 0 0 0}.suggestions-special{position:relative;background-color:white;cursor:pointer;border:solid 1px #aaaaaa;padding:0;margin:0;margin-top:-2px;display:none;padding:0.25em 0.25em;line-height:1.25em}.suggestions-results{background-color:white;cursor:pointer;border:solid 1px #aaaaaa;padding:0;margin:0}.suggestions-result{color:black;margin:0;line-height:1.5em;padding:0.01em 0.25em;text-align:left; overflow:hidden;-o-text-overflow:ellipsis; text-overflow:ellipsis;white-space:nowrap}.suggestions-result-current{background-color:#4C59A6;color:white}.suggestions-special .special-label{color:gray;text-align:left}.suggestions-special .special-query{color:black;font-style:italic;text-align:left}.suggestions-special .special-hover{background-color:silver}.suggestions-result-current .special-label,.suggestions-result-current .special-query{color:white}.highlight{font-weight:bold}
+/* cache key: mzt54542_wiki:resourceloader:filter:minify-css:7:f8d0c6895ce3ae14434c16b8fca59432 */
+.postedit-container{margin:0 auto;position:fixed;top:0;height:0;left:50%;z-index:1000;font-size:13px}.postedit-container:hover{cursor:pointer}.postedit{position:relative;top:0.6em;left:-50%;padding:.6em 3.6em .6em 1.1em;line-height:1.5625em;color:#626465;background-color:#f4f4f4;border:1px solid #dcd9d9;text-shadow:0 0.0625em 0 rgba(255,255,255,0.5);border-radius:5px;box-shadow:0 2px 5px 0 #ccc;-webkit-transition:all 0.25s ease-in-out;-moz-transition:all 0.25s ease-in-out;-ms-transition:all 0.25s ease-in-out;-o-transition:all 0.25s ease-in-out;transition:all 0.25s ease-in-out}.skin-monobook .postedit{top:6em !important}.postedit-faded{opacity:0}.postedit-icon{padding-left:41px;  line-height:25px;background-repeat:no-repeat;background-position:8px 50%}.postedit-icon-checkmark{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABblBMVEUAAAD///////9PfTf///80aRdTgjn///9Feij///////////9Rfzf///////////9PfjZRgDh1o1xOfTb///////+bwYqLtnj///////9PfTa82K////9WhT6YxIL///9QgDdTgzr////////j7uDl7eLq8efi693k7OH///////9UhjuBr2rp9uRUhjr///9YljVKgir///9WiTlYjT3////9/v57vFlbkT5PjC9dlD/5/fhuq09stUTs9uhxuElctCpfnT1huDFloEZloUZmpENmvDZpvDxpvTxqvjxrvT5rvT9rwTxsqktswD5uwkBvuUdxw0NztFBztU9ztVBzwkp0tlJ1xkd2t1R3uVR4w1F4xk54x014yE15uVZ5v1R5xVB6v1R7yFJ8wVh9xVl9yFR9yVd9ylN+xVh+yFd/x1l/yFeAylmEx1+Ny2uY0Hqe04Wj1Ymv3Ze33qLD47TJ5L3O6cPU7Mrq9eb2+/Q4j37OAAAAQHRSTlMAAQIEBAUFBQwPFB4fJCUoKiosQEhJS01RUlZZXmdydXaChYuSlJSWmJmoq6uur8LExcvM19fg5ejt8fX2+Pr7SljgewAAAKpJREFUGBkFwQNCAwAAAMDLtl3LtrG4rWXbtvX77gAgZ6grFwC0bhwNVgKgdPZx8b0dgLi+s7Wn0VoAqpfOI9+BNADZI7fLrz2pSEwGHZuH+78lSK8ZLkLezF3ooyUG3VPXq2USei9WngeyoG195yBYWDF3E/2pAhl1e9Gr8bGT+bfOFCC2fnvh4X7rcqIAQNNu+HT6sxkAjceTL/2ZAIhv+PorBwBJxfkA//dFHSCBy/UTAAAAAElFTkSuQmCC);background-image:url(http://wiki.sunfounder.cc/resources/src/mediawiki.action/images/green-checkmark.png?2015-08-10T21:21:40Z)!ie;background-position:left}.postedit-close{position:absolute;padding:0 .8em;right:0;top:0;font-size:1.25em;font-weight:bold;line-height:2.3em;color:black;text-shadow:0 0.0625em 0 white;text-decoration:none;opacity:0.2;filter:alpha(opacity=20)}.postedit-close:hover{color:black;text-decoration:none;opacity:0.4;filter:alpha(opacity=40)}
+/* cache key: mzt54542_wiki:resourceloader:filter:minify-css:7:f09d6615ebc8043adcffc56d2e13f5e7 */</style><style>
+.suggestions a.mw-searchSuggest-link,.suggestions a.mw-searchSuggest-link:hover,.suggestions a.mw-searchSuggest-link:active,.suggestions a.mw-searchSuggest-link:focus{color:black;text-decoration:none}.suggestions-result-current a.mw-searchSuggest-link,.suggestions-result-current a.mw-searchSuggest-link:hover,.suggestions-result-current a.mw-searchSuggest-link:active,.suggestions-result-current a.mw-searchSuggest-link:focus{color:white}.suggestions a.mw-searchSuggest-link .special-query{ overflow:hidden;-o-text-overflow:ellipsis; text-overflow:ellipsis;white-space:nowrap}
+/* cache key: mzt54542_wiki:resourceloader:filter:minify-css:7:ae3fa4570b5ac0c6cf7b3776c8ae4d6f */</style><meta name="ResourceLoaderDynamicStyles" content="">
+<style>a:lang(ar),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}
+/* cache key: mzt54542_wiki:resourceloader:filter:minify-css:7:c149b8b8dcbb19511feb982f6e08e601 */</style>
+<script src="./GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module - Wiki_files/load(1).php"></script><script src="./GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module - Wiki_files/load(2).php"></script>
+<script>if(window.mw){
+mw.config.set({"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module","wgTitle":"GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module","wgCurRevisionId":6573,"wgRevisionId":6573,"wgArticleId":2099,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":[],"wgBreakFrames":false,"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgMonthNamesShort":["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"wgRelevantPageName":"GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module","wgRelevantArticleId":2099,"wgIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[]});
+}</script><script>if(window.mw){
+mw.loader.implement("user.options",function($,jQuery){mw.user.options.set({"variant":"en"});});mw.loader.implement("user.tokens",function($,jQuery){mw.user.tokens.set({"editToken":"+\\","patrolToken":"+\\","watchToken":"+\\"});});
+/* cache key: mzt54542_wiki:resourceloader:filter:minify-js:7:a5c52c063dc436c1ca7c9f456936a5e9 */
+}</script>
+<script>if(window.mw){
+mw.loader.load(["mediawiki.page.startup","mediawiki.legacy.wikibits","mediawiki.legacy.ajax","skins.vector.js"]);
+}</script><script src="./GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module - Wiki_files/load(3).php"></script>
+<!--[if lt IE 7]><style type="text/css">body{behavior:url("http://wiki.sunfounder.cc/skins/Vector/csshover.min.htc")}</style><![endif]-->
+</head>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module skin-vector action-view">
+		<div id="mw-page-base" class="noprint"></div>
+		<div id="mw-head-base" class="noprint"></div>
+		<div id="content" class="mw-body" role="main">
+			<a id="top"></a>
+
+						<div class="mw-indicators">
+</div>
+			<h1 id="firstHeading" class="firstHeading" lang="en">GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module</h1>
+						<div id="bodyContent" class="mw-body-content">
+									<div id="siteSub">From Wiki</div>
+								<div id="contentSub"></div>
+												<div id="jump-to-nav" class="mw-jump">
+					Jump to:					<a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module#mw-head">navigation</a>, 					<a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module#p-search">search</a>
+				</div>
+				<div id="mw-content-text" lang="en" dir="ltr" class="mw-content-ltr"><div id="toc" class="toc"><div id="toctitle"><h2>Contents</h2><span class="toctoggle">&nbsp;[<a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module#" id="togglelink">hide</a>]&nbsp;</span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module#Introduction"><span class="tocnumber">1</span> <span class="toctext"><b>Introduction</b></span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module#Main_Features"><span class="tocnumber">2</span> <span class="toctext"><b>Main Features</b></span></a></li>
+<li class="toclevel-1 tocsection-3"><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module#Introduction_of_Pins"><span class="tocnumber">3</span> <span class="toctext"><b>Introduction of Pins</b></span></a></li>
+<li class="toclevel-1 tocsection-4"><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module#Principle"><span class="tocnumber">4</span> <span class="toctext"><b>Principle</b></span></a></li>
+<li class="toclevel-1 tocsection-5"><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module#Experimental_Procedures_for_Arduino"><span class="tocnumber">5</span> <span class="toctext"><b>Experimental Procedures for Arduino</b></span></a></li>
+<li class="toclevel-1 tocsection-6"><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module#Resource"><span class="tocnumber">6</span> <span class="toctext"><b>Resource</b></span></a></li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Introduction"><b>Introduction</b></span></h2>
+<p><a href="http://wiki.sunfounder.cc/index.php?title=File:GY-271_HMC5883L_1.jpg" class="image"><img alt="GY-271 HMC5883L 1.jpg" src="./GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module - Wiki_files/GY-271_HMC5883L_1.jpg" width="274" height="254"></a>
+<br>
+The Compass Module is designed for low-field magnetic sensing with a digital interface and perfect to give precise heading information. This compact sensor fits into small projects such as UAVs and robot navigation systems. The sensor converts any magnetic field to a differential voltage output on 3 axes. This voltage shift is the raw digital output value, which can then be used to calculate headings or sense magnetic fields coming from different directions.
+</p>
+<h2><span class="mw-headline" id="Main_Features"><b>Main Features</b></span></h2>
+<ol>
+<li>Gold plating PCB, applying machine welding technology, superb technique and reliably quality guarantee! </li>
+<li>Name: HMC5883L Module (Triaxial Magnetic Field Module);</li>
+<li>Type: GY-271; </li>
+<li>Used Chip: HMC5883L;</li>
+<li>Power Supply: 3~5V;</li>
+<li>Communication Mode: Standard IIC communicating protocol;</li>
+<li>Measuring Range: ±1.3-8 Gauss.</li>
+</ol>
+<h2><span class="mw-headline" id="Introduction_of_Pins"><b>Introduction of Pins</b></span></h2>
+<table class="wikitable">
+<tbody><tr>
+<th colspan="2">Pin Introduction
+</th></tr>
+<tr>
+<td>VCC
+</td>
+<td>Connected to the anode of the power supply (3~5v)
+</td></tr>
+<tr>
+<td>GND
+</td>
+<td>Connected to the cathode of the power supply
+</td></tr>
+<tr>
+<td>SCL
+</td>
+<td>I²C clock
+</td></tr>
+<tr>
+<td>SDA
+</td>
+<td>I²C data
+</td></tr>
+<tr>
+<td>DRDY
+</td>
+<td>Interrupting pin for data preparation, DRDY is pulled up inside and keeps the low level for 250μsec when the data are on the output register.
+</td></tr></tbody></table>
+<h2><span class="mw-headline" id="Principle"><b>Principle</b></span></h2>
+<pre>Honeywell HMC5883L is a kind of SMT High integration module that has a weakly magnetic sensor chip with digital interface. It is widely used in testing of low cost compass and magnetic field. HMC5883L contains the latest high resolution HMC118X series magnetoresistive sensor and Honeywell-patent integrated circuit including amplifier, automatic demagnetization driver, deviation calibration and 12-bit A/D converter that can keep the precision of compass ranging within 1°~2°. What’s more, it has simply equipped I2C series bus interfaces. 
+</pre>
+<p><a href="http://wiki.sunfounder.cc/index.php?title=File:GY-271_HMC5883L_2.jpg" class="image"><img alt="GY-271 HMC5883L 2.jpg" src="./GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module - Wiki_files/GY-271_HMC5883L_2.jpg" width="741" height="456"></a>
+<br>
+</p>
+<h2><span class="mw-headline" id="Experimental_Procedures_for_Arduino"><b>Experimental Procedures for Arduino</b></span></h2>
+<table class="wikitable">
+
+<tbody><tr>
+<td>GY-271
+</td>
+<td>Arduino uno
+</td></tr>
+<tr>
+<td>VCC
+</td>
+<td>VCC
+</td></tr>
+<tr>
+<td>GND
+</td>
+<td>GND
+</td></tr>
+<tr>
+<td>SCL
+</td>
+<td>A5
+</td></tr>
+<tr>
+<td>SDA
+</td>
+<td>A4
+</td></tr></tbody></table>
+<p><b>Step 1:</b> Connect the circuit:
+<br>
+<a href="http://wiki.sunfounder.cc/index.php?title=File:GY-271_HMC5883L_3.jpg" class="image"><img alt="GY-271 HMC5883L 3.jpg" src="./GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module - Wiki_files/GY-271_HMC5883L_3.jpg" width="563" height="346"></a>
+</p><p><br>
+The serial monitor shows the results (X plane angle, Y plane angle, Z plane angle in degrees) of different positions of the module.
+<br>
+<b>Step 2:</b> Compile and upload the code.
+</p>
+<pre>/*
+ * HMC5883L Demo.
+ * dipmicro electronics, 2014
+ *
+ * Hardware Used:
+ * 
+ * Arduino UNO or compatible
+ * GY271 module (dipmicro part DE4196
+ *  Arduino GND -&gt; GY271/HMC5883L GND
+ *  Arduino 3.3V -&gt; GY271/HMC5883L VCC
+ *  Arduino A4 (SDA) -&gt; GY271/HMC5883L SDA
+ *  Arduino A5 (SCL) -&gt; GY271/HMC5883L SCL 
+ */
+
+#include &lt;Wire.h&gt; //I2C Arduino Library
+
+#define HMC5883L_ADDR 0x1E //0011110b, I2C 7bit address of HMC5883
+
+bool haveHMC5883L = false;
+
+bool detectHMC5883L ()
+{
+  // read identification registers
+  Wire.beginTransmission(HMC5883L_ADDR); //open communication with HMC5883
+  Wire.write(10); //select Identification register A
+  Wire.endTransmission();
+  Wire.requestFrom(HMC5883L_ADDR, 3);
+  if(3 == Wire.available()) {
+    char a = Wire.read();
+    char b = Wire.read();
+    char c = Wire.read();
+    if(a == 'H' &amp;&amp; b == '4' &amp;&amp; c == '3')
+      return true;
+  }
+
+  return false;
+}
+
+void setup()
+{
+  //Initialize Serial and I2C communications
+  Serial.begin(9600);
+  Serial.println("GY271 TEST");
+  Wire.begin();
+  // lower I2C clock http://www.gammon.com.au/forum/?id=10896
+  TWBR = 78;  // 25 kHz 
+  TWSR |= _BV (TWPS0);  // change prescaler  
+}
+
+void loop()
+{
+  bool detect = detectHMC5883L();
+
+  if(!haveHMC5883L) 
+  {
+    if(detect) 
+    {
+      haveHMC5883L = true;
+      Serial.println("We have HMC5883L, moving on");
+      // Put the HMC5883 IC into the correct operating mode
+      Wire.beginTransmission(HMC5883L_ADDR); //open communication with HMC5883
+      Wire.write(0x02); //select mode register
+      Wire.write(0x00); //continuous measurement mode
+      Wire.endTransmission();
+    }
+    else
+    {  
+      Serial.println("No HMC5883L detected!");
+      delay(2000);
+      return;
+    }
+  }
+  else
+  {
+    if(!detect) {
+      haveHMC5883L = false;
+      Serial.println("Lost connection to HMC5883L!");
+      delay(2000);
+      return;
+    }
+  }
+  
+  int x,y,z; //triple axis data
+
+  //Tell the HMC5883 where to begin reading data
+  Wire.beginTransmission(HMC5883L_ADDR);
+  Wire.write(0x03); //select register 3, X MSB register
+  Wire.endTransmission();
+
+ //Read data from each axis, 2 registers per axis
+  Wire.requestFrom(HMC5883L_ADDR, 6);
+  if(6&lt;=Wire.available()){
+    x = Wire.read()&lt;&lt;8; //X msb
+    x |= Wire.read(); //X lsb
+    z = Wire.read()&lt;&lt;8; //Z msb
+    z |= Wire.read(); //Z lsb
+    y = Wire.read()&lt;&lt;8; //Y msb
+    y |= Wire.read(); //Y lsb
+  }
+  
+  //Print out values of each axis
+  Serial.print("x: ");
+  Serial.print(x);
+  Serial.print("  y: ");
+  Serial.print(y);
+  Serial.print("  z: ");
+  Serial.println(z);
+  
+  delay(250);
+}
+  
+</pre>
+<p>The serial monitor shows the results (X plane angle, Y plane angle, Z plane angle in degrees) of different positions of the module.
+<br>
+<a href="http://wiki.sunfounder.cc/index.php?title=File:GY-271_HMC5883L_4.jpg" class="image"><img alt="GY-271 HMC5883L 4.jpg" src="./GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module - Wiki_files/GY-271_HMC5883L_4.jpg" width="339" height="353"></a>
+</p>
+<h2><span class="mw-headline" id="Resource"><b>Resource</b></span></h2>
+<p><a rel="nofollow" target="_blank" class="external text" href="http://wiki.sunfounder.cc/images/a/af/HMC5883L.zip">HMC5883L library</a><a href="http://wiki.sunfounder.cc/index.php?title=File:LINK.jpg" class="image"><img alt="LINK.jpg" src="./GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module - Wiki_files/LINK.jpg" width="30" height="30"></a><br>
+</p>
+<!-- 
+NewPP limit report
+CPU time usage: 0.021 seconds
+Real time usage: 0.024 seconds
+Preprocessor visited node count: 32/1000000
+Preprocessor generated node count: 48/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/40
+Expensive parser function count: 0/100
+-->
+
+<!-- 
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 - -total
+-->
+
+<!-- Saved in parser cache with key mzt54542_wiki:pcache:idhash:2099-0!*!*!!en!5!* and timestamp 20250515025450 and revision id 6573
+ -->
+</div>									<div class="printfooter">
+						Retrieved from "<a dir="ltr" href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module&amp;oldid=6573">http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module&amp;oldid=6573</a>"					</div>
+													<div id="catlinks" class="catlinks catlinks-allhidden"></div>												<div class="visualClear"></div>
+							</div>
+		</div>
+		<div id="mw-navigation">
+			<h2>Navigation menu</h2>
+
+			<div id="mw-head">
+									<div id="p-personal" role="navigation" class="" aria-labelledby="p-personal-label">
+						<h3 id="p-personal-label">Personal tools</h3>
+						<ul>
+							<li id="pt-login"><a href="http://wiki.sunfounder.cc/index.php?title=Special:UserLogin&amp;returnto=GY-271+HMC5883L+3-Axis+Magnetic+Electronic+Compass+Module" title="You are encouraged to log in; however, it is not mandatory [alt-shift-o]" accesskey="o">Log in</a></li>						</ul>
+					</div>
+									<div id="left-navigation">
+										<div id="p-namespaces" role="navigation" class="vectorTabs" aria-labelledby="p-namespaces-label">
+						<h3 id="p-namespaces-label">Namespaces</h3>
+						<ul>
+															<li id="ca-nstab-main" class="selected"><span><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module" title="View the content page [alt-shift-c]" accesskey="c">Page</a></span></li>
+															<li id="ca-talk" class="new"><span><a href="http://wiki.sunfounder.cc/index.php?title=Talk:GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module&amp;action=edit&amp;redlink=1" title="Discussion about the content page [alt-shift-t]" accesskey="t">Discussion</a></span></li>
+													</ul>
+					</div>
+										<div id="p-variants" role="navigation" class="vectorMenu emptyPortlet" aria-labelledby="p-variants-label">
+												<h3 id="p-variants-label" tabindex="0"><span>Variants</span><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module#" tabindex="-1"></a></h3>
+
+						<div class="menu">
+							<ul>
+															</ul>
+						</div>
+					</div>
+									</div>
+				<div id="right-navigation">
+										<div id="p-views" role="navigation" class="vectorTabs" aria-labelledby="p-views-label">
+						<h3 id="p-views-label">Views</h3>
+						<ul>
+															<li id="ca-view" class="selected"><span><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module">Read</a></span></li>
+															<li id="ca-viewsource"><span><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module&amp;action=edit" title="This page is protected.
+You can view its source [alt-shift-e]" accesskey="e">View source</a></span></li>
+															<li id="ca-history" class="collapsible"><span><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module&amp;action=history" title="Past revisions of this page [alt-shift-h]" accesskey="h">View history</a></span></li>
+													</ul>
+					</div>
+										<div id="p-cactions" role="navigation" class="vectorMenu emptyPortlet" aria-labelledby="p-cactions-label" style="">
+						<h3 id="p-cactions-label" tabindex="0"><span>More</span><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module#" tabindex="-1"></a></h3>
+
+						<div class="menu">
+							<ul>
+															</ul>
+						</div>
+					</div>
+										<div id="p-search" role="search">
+						<h3>
+							<label for="searchInput">Search</label>
+						</h3>
+
+						<form action="http://wiki.sunfounder.cc/index.php" id="searchform">
+														<div id="simpleSearch">
+															<input type="search" name="search" placeholder="Search" title="Search Wiki [alt-shift-f]" accesskey="f" id="searchInput" tabindex="1" autocomplete="off"><input type="hidden" value="Special:Search" name="title"><input type="submit" name="go" value="Go" title="Go to a page with this exact name if exists" id="searchButton" class="searchButton">								</div>
+						</form>
+					</div>
+									</div>
+			</div>
+			<div id="mw-panel">
+				<div id="p-logo" role="banner"><a class="mw-wiki-logo" href="https://www.sunfounder.com/" title="Visit the main page"></a></div>
+						<div class="portal" role="navigation" id="p-Navigation" aria-labelledby="p-Navigation-label">
+			<h3 id="p-Navigation-label">Navigation</h3>
+
+			<div class="body">
+									<ul>
+													<li id="n-mainpage-description"><a href="http://wiki.sunfounder.cc/index.php?title=Main_Page" title="Visit the main page [alt-shift-z]" accesskey="z">Main page</a></li>
+													<li id="n-randompage"><a href="http://wiki.sunfounder.cc/index.php?title=Special:Random" title="Load a random page [alt-shift-x]" accesskey="x">Random page</a></li>
+													<li id="n-recentchanges"><a href="http://wiki.sunfounder.cc/index.php?title=Special:RecentChanges" title="A list of recent changes in the wiki [alt-shift-r]" accesskey="r">Recent changes</a></li>
+											</ul>
+							</div>
+		</div>
+			<div class="portal" role="navigation" id="p-Collections" aria-labelledby="p-Collections-label">
+			<h3 id="p-Collections-label">Collections</h3>
+
+			<div class="body">
+									<ul>
+													<li id="n-SHOP"><a href="http://www.sunfounder.com/" rel="nofollow" target="_blank">SHOP</a></li>
+													<li id="n-LEARN"><a href="https://learn.sunfounder.com/" rel="nofollow" target="_blank">LEARN</a></li>
+													<li id="n-FORUM"><a href="https://forum.sunfounder.com/" rel="nofollow" target="_blank">FORUM</a></li>
+													<li id="n-BLOG"><a href="https://blog.sunfounder.com/" rel="nofollow" target="_blank">BLOG</a></li>
+													<li id="n-EDUCATION"><a href="https://education.sunfounder.com/" rel="nofollow" target="_blank">EDUCATION</a></li>
+											</ul>
+							</div>
+		</div>
+			<div class="portal" role="navigation" id="p-tb" aria-labelledby="p-tb-label">
+			<h3 id="p-tb-label">Tools</h3>
+
+			<div class="body">
+									<ul>
+													<li id="t-whatlinkshere"><a href="http://wiki.sunfounder.cc/index.php?title=Special:WhatLinksHere/GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module" title="A list of all wiki pages that link here [alt-shift-j]" accesskey="j">What links here</a></li>
+													<li id="t-recentchangeslinked"><a href="http://wiki.sunfounder.cc/index.php?title=Special:RecentChangesLinked/GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module" title="Recent changes in pages linked from this page [alt-shift-k]" accesskey="k">Related changes</a></li>
+													<li id="t-specialpages"><a href="http://wiki.sunfounder.cc/index.php?title=Special:SpecialPages" title="A list of all special pages [alt-shift-q]" accesskey="q">Special pages</a></li>
+													<li id="t-print"><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module&amp;printable=yes" rel="alternate" title="Printable version of this page [alt-shift-p]" accesskey="p">Printable version</a></li>
+													<li id="t-permalink"><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module&amp;oldid=6573" title="Permanent link to this revision of the page">Permanent link</a></li>
+													<li id="t-info"><a href="http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module&amp;action=info" title="More information about this page">Page information</a></li>
+											</ul>
+							</div>
+		</div>
+				</div>
+		</div>
+		<div id="footer" role="contentinfo">
+							<ul id="footer-info">
+											<li id="footer-info-lastmod"> This page was last modified on 10 March 2021, at 08:05.</li>
+									</ul>
+							<ul id="footer-places">
+											<li id="footer-places-privacy"><a href="http://wiki.sunfounder.cc/index.php?title=Wiki:Privacy_policy" title="Wiki:Privacy policy">Privacy policy</a></li>
+											<li id="footer-places-about"><a href="http://wiki.sunfounder.cc/index.php?title=Wiki:About" title="Wiki:About">About Wiki</a></li>
+											<li id="footer-places-disclaimer"><a href="http://wiki.sunfounder.cc/index.php?title=Wiki:General_disclaimer" title="Wiki:General disclaimer">Disclaimers</a></li>
+									</ul>
+										<ul id="footer-icons" class="noprint">
+											<li id="footer-poweredbyico">
+															<a href="http://www.mediawiki.org/"><img src="./GY-271 HMC5883L 3-Axis Magnetic Electronic Compass Module - Wiki_files/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="http://wiki.sunfounder.cc/resources/assets/poweredby_mediawiki_132x47.png 1.5x, http://wiki.sunfounder.cc/resources/assets/poweredby_mediawiki_176x62.png 2x" width="88" height="31"></a>
+													</li>
+									</ul>
+						<div style="clear:both"></div>
+		</div>
+		<script>if(window.jQuery)jQuery.ready();</script><script>if(window.mw){
+mw.loader.state({"site":"ready","user":"ready","user.groups":"ready"});
+}</script>
+<script>if(window.mw){
+mw.loader.load(["mediawiki.toc","mediawiki.action.view.postEdit","mediawiki.user","mediawiki.hidpi","mediawiki.page.ready","mediawiki.searchSuggest"],null,true);
+}</script>
+<script>if(window.mw){
+mw.config.set({"wgBackendResponseTime":42});
+}</script>
+	
+
+<div class="suggestions" style="display: none; font-size: 13px;"><div class="suggestions-results"></div><div class="suggestions-special"></div></div></body></html>

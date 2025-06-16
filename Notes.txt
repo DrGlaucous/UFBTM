@@ -1,5 +1,5 @@
 
-BMI160 chip schematic:
+BMI160 chip shcematic:
 
 See:
 https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmi160-ds000.pdf
@@ -12,7 +12,7 @@ SDA for I2C
 
 
 ~~~~~~~~~~~~~~~~~~~~~
-pin to breakout translations for BMI160:
+pin to breakout transaltions for BMI160:
 [chip pin]: [breakout pin]
 SDO: SAO (main i2c address, pulled up)
 ASDX: SDX (magnetometer i2c, no resistor)
@@ -54,7 +54,7 @@ or 804050
 [80]4050
 
 
-GY-271 magnetometer breakout info
+GY-271 magnometer breakout info
 See:
 http://wiki.sunfounder.cc/index.php?title=GY-271_HMC5883L_3-Axis_Magnetic_Electronic_Compass_Module
 
@@ -66,11 +66,11 @@ https://github.com/SlimeVR/SlimeVR-Tracker-ESP/issues/300
 The charger modules:
 LX-LBES - brand name
 
-similar variants:
+simmilar variants:
 LN-MLIC
 LX-LBC3
 
-the aliexpress counterpart is commonly called the the "TP4057"
+the aliexpress couterpart is commonly called the the "TP4057"
 
 good site that provides some info on the components on this module:
 https://www.adrirobot.it/caricabatteria-litio-li-ion-step-up-boost-4-28v-regolabile/
@@ -134,10 +134,10 @@ or headphone jack (2.5mm)!
 PJ-210B
 PJ-320A
 (these may have a shorting problem... I need to either look into the safest way of routing connections or use a different connector.
-A disappointment because otherwise, they're perfect for my needs)
+A disappointment because otheriwse, they're perfect for my needs)
 
 
-A USB connector that's obscure so people don't try to plug in a generic connector to it
+A USB conector that's obscure so people don't try to plug in a generic connector to it
 Mini USB 8P
 
 

@@ -140,6 +140,9 @@ A disappointment because otheriwse, they're perfect for my needs)
 A USB conector that's obscure so people don't try to plug in a generic connector to it
 Mini USB 8P
 
+potential screw type:
+m2 x5mm plastic boring screw
+
 
 
 

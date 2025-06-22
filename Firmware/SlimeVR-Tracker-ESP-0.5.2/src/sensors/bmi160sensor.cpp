@@ -104,9 +104,7 @@ void BMI160Sensor::initQMP(BMI160MagRate magRate) {
 	imu.setRegister(BMI160_RA_MAG_IF_1_MODE, BMI160_MAG_SETUP_MODE);
 	delay(3);
 
-	/* Configure QMC5883L Sensor */
-	imu.setMagRegister(QMP_RA_RESET, 1);
-	delay(3);
+	/* Configure QMC5883P Sensor */
 	imu.setMagRegister(
 		QMP_RA_CONTROL,
 		QMP_CFG_MODE_CONT | QMP_CFG_ODR_200HZ | QMP_CFG_OVR_SMPL8 | QMP_CFG_DOWN_SMPL8
@@ -114,10 +112,8 @@ void BMI160Sensor::initQMP(BMI160MagRate magRate) {
 	delay(3);
 	imu.setMagRegister(
 		QMP_RA_CONTROL2,
-		QMP_CFG_RNG_30G
+		QMP_CFG_RNG_12G
 	);
-	delay(3);
-	imu.setMagRegister(QMP_RA_RESET, 1);
 	delay(3);
 
 
@@ -590,7 +586,6 @@ void BMI160Sensor::readFIFO() {
 // gyro callback updates fusion and must be last
 #if !USE_6_AXIS
 			if (mnew) {
-				m_Logger.info("%d, %d, %d", mx, my, mz);
 				onMagRawSample(BMI160_ODR_MAG_MICROS, mx, my, mz);
 			}
 #endif

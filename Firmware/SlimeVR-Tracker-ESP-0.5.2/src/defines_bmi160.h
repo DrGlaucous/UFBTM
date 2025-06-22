@@ -66,7 +66,7 @@
 #define BMI160_TEMPCAL_DEBUG false
 
 // Print debug info every second.
-#define BMI160_DEBUG false
+#define BMI160_DEBUG true
 
 // Use sensitivity calibration.
 #define BMI160_USE_SENSCAL true

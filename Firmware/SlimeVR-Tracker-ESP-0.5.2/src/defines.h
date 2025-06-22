@@ -177,12 +177,23 @@ PIN_IMU_SDA, PRIMARY_IMU_OPTIONAL, BMI160_QMC_REMAP) \
 //  #define LED_PIN 2
 //  #define LED_INVERTED false
 #elif BOARD == BOARD_LOLIN_C3_MINI
-#define PIN_IMU_SDA 5
-#define PIN_IMU_SCL 4
-#define PIN_IMU_INT 6
-#define PIN_IMU_INT_2 8
-#define PIN_BATTERY_LEVEL 3
-#define LED_PIN 7
+#define PIN_IMU_SDA 3
+#define PIN_IMU_SCL 2
+#define PIN_IMU_INT 1
+#define PIN_IMU_INT_2 0
+#define PIN_BATTERY_LEVEL 4
+#define LED_PIN 8
+
+#ifndef BATTERY_SHIELD_R1
+#define BATTERY_SHIELD_R1 100.0
+#endif
+#ifndef BATTERY_SHIELD_R2
+#define BATTERY_SHIELD_R2 100.0
+#endif
+#ifndef BATTERY_SHIELD_RESISTANCE
+#define BATTERY_SHIELD_RESISTANCE 0.0
+#endif
+
 //  #define LED_INVERTED false
 #elif BOARD == BOARD_BEETLE32C3
 #define PIN_IMU_SDA 8

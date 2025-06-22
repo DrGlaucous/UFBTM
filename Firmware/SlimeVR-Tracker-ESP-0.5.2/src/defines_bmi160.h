@@ -24,10 +24,11 @@
 #define BMI160_DEFINES_H
 
 // BMI160 magnetometer type, applies to both main and aux trackers, mixed types are not
-// supported currently. If only 1 out of 2 trackers has a mag, tracker without a mag
-// should still function normally. NOT USED if USE_6_AXIS == true Pick one:
-#define BMI160_MAG_TYPE BMI160_MAG_TYPE_HMC
+// supported currently. If only 1 out of 2 trackers has a mag, the tracker without a mag
+// should still function normally. NOT USED if USE_6_AXIS == true. Pick one:
+// #define BMI160_MAG_TYPE BMI160_MAG_TYPE_HMC
 // #define BMI160_MAG_TYPE BMI160_MAG_TYPE_QMC
+#define BMI160_MAG_TYPE BMI160_MAG_TYPE_QMP
 
 // Use VQF instead of mahony sensor fusion.
 // Features: rest bias estimation, magnetic distortion rejection.

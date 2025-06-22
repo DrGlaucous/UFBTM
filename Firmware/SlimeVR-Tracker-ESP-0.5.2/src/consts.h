@@ -131,6 +131,7 @@ enum class ImuID {
 
 #define BMI160_MAG_TYPE_HMC 1
 #define BMI160_MAG_TYPE_QMC 2
+#define BMI160_MAG_TYPE_QMP 3
 
 #define MCU_UNKNOWN 0
 #define MCU_ESP8266 1

@@ -34,7 +34,9 @@
 #define CONFIG_8GAUSS (2)
 #define CONFIG_12GAUSS (1)
 #define CONFIG_30GAUSS (0)
+
 #define CR2_SOFT_RESET (1 << 7)
+
 #define CR1_MODE_SUSPEND (0)
 #define CR1_MODE_NORMAL (1)
 #define CR1_MODE_SINGLE (2)

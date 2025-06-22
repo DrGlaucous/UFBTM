@@ -25,6 +25,7 @@
 
 #include <hmc5883l.h>
 #include <qmc5883l.h>
+#include <qmc5883p.h>
 
 #include <map>
 
@@ -88,6 +89,47 @@ void BMI160Sensor::initQMC(BMI160MagRate magRate) {
 	imu.setRegister(BMI160_RA_MAG_IF_1_MODE, BMI160_MAG_DATA_MODE_6);
 }
 
+void BMI160Sensor::initQMP(BMI160MagRate magRate) {
+	/* Configure MAG interface and setup mode */
+	/* Set MAG interface normal power mode */
+	imu.setRegister(BMI160_RA_CMD, BMI160_CMD_MAG_MODE_NORMAL);
+	delay(60);
+
+	/* Enable MAG interface */
+	imu.setRegister(BMI160_RA_IF_CONF, BMI160_IF_CONF_MODE_PRI_AUTO_SEC_MAG);
+	delay(1);
+
+	imu.setMagDeviceAddress(QMP_DEVADDR);
+	delay(3);
+	imu.setRegister(BMI160_RA_MAG_IF_1_MODE, BMI160_MAG_SETUP_MODE);
+	delay(3);
+
+	/* Configure QMC5883L Sensor */
+	imu.setMagRegister(QMP_RA_RESET, 1);
+	delay(3);
+	imu.setMagRegister(
+		QMP_RA_CONTROL,
+		QMP_CFG_MODE_CONT | QMP_CFG_ODR_200HZ | QMP_CFG_OVR_SMPL8 | QMP_CFG_DOWN_SMPL8
+	);
+	delay(3);
+	imu.setMagRegister(
+		QMP_RA_CONTROL2,
+		QMP_CFG_RNG_30G
+	);
+	delay(3);
+	imu.setMagRegister(QMP_RA_RESET, 1);
+	delay(3);
+
+
+	imu.setRegister(BMI160_RA_MAG_IF_2_READ_RA, QMP_RA_DATA);
+	imu.setRegister(BMI160_RA_MAG_CONF, magRate);
+	delay(3);
+	imu.setRegister(BMI160_RA_MAG_IF_1_MODE, BMI160_MAG_DATA_MODE_6);
+}
+
+
+
+
 void BMI160Sensor::motionSetup() {
 	// initialize device
 	imu.initialize(
@@ -104,6 +146,8 @@ void BMI160Sensor::motionSetup() {
 	initHMC(BMI160_MAG_RATE);
 #elif BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMC
 	initQMC(BMI160_MAG_RATE);
+#elif BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMP
+	initQMP(BMI160_MAG_RATE);
 #else
 	static_assert(false, "Mag is enabled but BMI160_MAG_TYPE not set in defines");
 #endif
@@ -546,6 +590,7 @@ void BMI160Sensor::readFIFO() {
 // gyro callback updates fusion and must be last
 #if !USE_6_AXIS
 			if (mnew) {
+				m_Logger.info("%d, %d, %d", mx, my, mz);
 				onMagRawSample(BMI160_ODR_MAG_MICROS, mx, my, mz);
 			}
 #endif
@@ -1173,7 +1218,7 @@ void BMI160Sensor::getMagnetometerXYZFromBuffer(
 	*x = ((int16_t)data[0] << 8) | data[1];
 	*z = ((int16_t)data[2] << 8) | data[3];
 	*y = ((int16_t)data[4] << 8) | data[5];
-#elif BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMC
+#elif (BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMC) || (BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMP)
 	// qmc5883l -> 0 lsb 1 msb
 	// XYZ order
 	*x = ((int16_t)data[1] << 8) | data[0];

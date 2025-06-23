@@ -168,6 +168,7 @@ public:
 	~BMI160Sensor(){};
 	void initHMC(BMI160MagRate magRate);
 	void initQMC(BMI160MagRate magRate);
+	void initQMP(BMI160MagRate magRate);
 
 	void motionSetup() override final;
 	void motionLoop() override final;

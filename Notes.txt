@@ -11,6 +11,7 @@ SISO for SPI3
 SDA for I2C
 
 
+
 ~~~~~~~~~~~~~~~~~~~~~
 pin to breakout transaltions for BMI160:
 [chip pin]: [breakout pin]
@@ -32,6 +33,16 @@ SDX: SDA (main i2c, pulled up)
 x4 capacitors between positive and ground
 x4 392 resistors, 2 for i2c, and 2 for CS and SAO
 ~~~~~~~~~~~~~~~~~~~~~
+
+it came out in 2014:
+https://www.sensortips.com/featured/imu-targets-tight-spaces/
+
+pin-equivalent alternative:
+lsm6ds3
+(roughly same price, unsure if its better.)
+
+
+
 
 The GY-271/3 is much more basic;
 5-pin interface:
@@ -80,6 +91,11 @@ SS12D10 //flat, not as good, can be bumped and turned off
 or
 SS12D06 //90 deg
 
+also looked into:
+SS12F21
+and
+SK12F14 (this one seems like its the best)
+sk22h03
 
 some useful info on charging the module:
 https://forum.arduino.cc/t/charging-lithium-ion-battery-using-the-usb-port-on-esp32-c3-supermini-with-tp4056-and-powering-the-esp32-with-the-battery-when-not-connected-via-usb/1302012/3

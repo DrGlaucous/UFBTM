@@ -96,6 +96,12 @@ SS12F21
 and
 SK12F14 (this one seems like its the best)
 sk22h03
+Even better:
+SK12D07VG3
+
+note: the last digit in this switch is how long the stick bit is.
+I think 3 or 4 mm should be good. (leaning towards 4)
+
 
 some useful info on charging the module:
 https://forum.arduino.cc/t/charging-lithium-ion-battery-using-the-usb-port-on-esp32-c3-supermini-with-tp4056-and-powering-the-esp32-with-the-battery-when-not-connected-via-usb/1302012/3
@@ -160,6 +166,23 @@ potential screw type:
 m2 x5mm plastic boring screw
 
 
+final-ish BOM:
+
+BMI160 x 15 (or lsm6ds3 for kicks)
+GY 273 x 15
+ESP32-C3_Mini_V1 x 10
+LX-LBES TP4057 x10
+PJ-320A x 10
+trrs wire x 5
+1n5817 diode x 20
+200k resistor x 20
+804040 battery x 10
+SK12D07VG4 switch x 10
+
+
+straps + buckles
+plastic screws
+male usb-c connectors (or a cheap hub + cables? $14 for something capable of hitting all the units at once) (going the premade hub + cord route here)
 
 
 

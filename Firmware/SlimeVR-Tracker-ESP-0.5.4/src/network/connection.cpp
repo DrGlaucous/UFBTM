@@ -719,6 +719,7 @@ void Connection::update() {
 				m_Logger.warn("Wrong sensor info packet");
 				break;
 			}
+			//todo: see what happens in here (marked for later)
 
 			for (int i = 0; i < (int)sensors.size(); i++) {
 				if (m_Packet[4] == sensors[i]->getSensorId()) {

@@ -192,6 +192,10 @@ plastic screws:
 (I.E. self-tapping scews)
 nerf screws are commonly m2.6 x X...
 
+m2.6 x 6
+imperial equivalent:
+#3 x 1/4
+
 
 
 

@@ -2583,9 +2583,9 @@
 		)
 		(uuid "9d47e5e1-7ac0-4a1c-acca-7ea330a2e5c5")
 	)
-	(text "The GY-27X must be connected to the BMI's 3v3 output so that its logic levels are 3v3.\nConnecting it to 5v is OK for the GY-273, but the GY-271 will alter i2c logic levels to output 5V,\nwhich may hurt the BMI160\n\nDepending on the IMU board, it may not have a\n5v tolerant input and instead may need to tap into the 3v3 one."
+	(text "The GY-27X must be connected to the BMI's 3v3 output so that its logic levels are 3v3.\nConnecting it to 5v is OK for the GY-273, but the GY-271 will alter i2c logic levels to output 5V,\nwhich may hurt the BMI160\n\nDepending on the IMU board, it may not have a\n5v tolerant input and instead may need to tap into the 3v3 one.\nI made the 3v3 input the default one for the sake of versatility."
 		(exclude_from_sim no)
-		(at 185.674 20.32 0)
+		(at 185.166 21.082 0)
 		(effects
 			(font
 				(size 1.27 1.27)

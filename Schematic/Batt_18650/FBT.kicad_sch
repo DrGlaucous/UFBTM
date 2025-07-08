@@ -336,6 +336,183 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Device:Battery_Cell"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "BT"
+				(at 2.54 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "Battery_Cell"
+				(at 2.54 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 1.524 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 1.524 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Single-cell battery"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "battery cell"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Battery_Cell_0_1"
+				(rectangle
+					(start -2.286 1.778)
+					(end 2.286 1.524)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start -1.524 1.016)
+					(end 1.524 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 1.778) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0.762) (xy 0 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 3.048) (xy 1.778 3.048)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 3.556) (xy 1.27 2.54)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "Battery_Cell_1_1"
+				(pin passive line
+					(at 0 5.08 270)
+					(length 2.54)
+					(name "+"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -2.54 90)
+					(length 2.54)
+					(name "-"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Device:D_Schottky"
 			(pin_numbers
 				(hide yes)
@@ -2559,16 +2736,16 @@
 		(uuid "3932156d-4931-4bb5-8700-6ed127e8cf24")
 	)
 	(junction
-		(at 259.08 140.97)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "47b47d6b-28c4-4430-b373-b81985ffb7b3")
-	)
-	(junction
 		(at 254 133.35)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "582760d2-cb32-4761-a5bf-ce20424847a3")
+	)
+	(junction
+		(at 254 140.97)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5b7d08fe-9fe7-42de-bd86-a31fafd80799")
 	)
 	(junction
 		(at 236.22 140.97)
@@ -2900,16 +3077,6 @@
 	)
 	(wire
 		(pts
-			(xy 259.08 135.89) (xy 259.08 133.35)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3b360d4f-6f7f-4f0f-8fbd-31856613ddbc")
-	)
-	(wire
-		(pts
 			(xy 261.62 34.29) (xy 261.62 41.91)
 		)
 		(stroke
@@ -2947,6 +3114,16 @@
 			(type default)
 		)
 		(uuid "5480e1eb-ba6d-4cc7-95ea-9155dddfa1ea")
+	)
+	(wire
+		(pts
+			(xy 254 140.97) (xy 270.51 140.97)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "57841f1d-fb16-4275-835c-0f467021b887")
 	)
 	(wire
 		(pts
@@ -3110,16 +3287,6 @@
 	)
 	(wire
 		(pts
-			(xy 259.08 140.97) (xy 259.08 146.05)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9a0eccc3-407c-4224-aa93-76eac9fd6c41")
-	)
-	(wire
-		(pts
 			(xy 241.3 106.68) (xy 241.3 107.95)
 		)
 		(stroke
@@ -3170,7 +3337,7 @@
 	)
 	(wire
 		(pts
-			(xy 254 133.35) (xy 259.08 133.35)
+			(xy 254 133.35) (xy 270.51 133.35)
 		)
 		(stroke
 			(width 0)
@@ -3270,13 +3437,23 @@
 	)
 	(wire
 		(pts
-			(xy 236.22 140.97) (xy 259.08 140.97)
+			(xy 236.22 140.97) (xy 254 140.97)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "fafec461-1f32-43a6-b720-4144b70688e5")
+	)
+	(wire
+		(pts
+			(xy 254 140.97) (xy 254 146.05)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fdac76b4-11eb-40b6-9ad4-1b73b256153f")
 	)
 	(wire
 		(pts
@@ -4794,7 +4971,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x01")
-		(at 264.16 146.05 0)
+		(at 259.08 146.05 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4803,7 +4980,7 @@
 		(fields_autoplaced yes)
 		(uuid "82a02ce6-3d6a-4b3b-b892-f906caeff582")
 		(property "Reference" "BT-2"
-			(at 266.7 144.7799 0)
+			(at 261.62 144.7799 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4812,7 +4989,7 @@
 			)
 		)
 		(property "Value" "Battery anode"
-			(at 266.7 147.3199 0)
+			(at 261.62 147.3199 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4821,7 +4998,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
-			(at 264.16 146.05 0)
+			(at 259.08 146.05 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4830,7 +5007,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 264.16 146.05 0)
+			(at 259.08 146.05 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4839,7 +5016,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x01, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 264.16 146.05 0)
+			(at 259.08 146.05 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4921,6 +5098,76 @@
 			(project "FBT"
 				(path "/b59d625c-f89d-4113-8c77-569da8af0dbc"
 					(reference "#PWR01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:Battery_Cell")
+		(at 270.51 138.43 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "aa3d2dca-da95-487c-8639-29172d4da7c6")
+		(property "Reference" "BT1"
+			(at 274.32 135.3184 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "Battery"
+			(at 274.32 137.8584 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+			(at 270.51 136.906 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 270.51 136.906 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Single-cell battery"
+			(at 270.51 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "7ee2cfad-46d0-42a7-af5c-d46db1f880d9")
+		)
+		(pin "1"
+			(uuid "f3751ec1-6494-4227-ab79-8ac022ab1ca6")
+		)
+		(instances
+			(project "FBT"
+				(path "/b59d625c-f89d-4113-8c77-569da8af0dbc"
+					(reference "BT1")
 					(unit 1)
 				)
 			)
@@ -5059,73 +5306,6 @@
 			(project "FBT"
 				(path "/b59d625c-f89d-4113-8c77-569da8af0dbc"
 					(reference "R1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x01")
-		(at 264.16 135.89 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "b6aee56d-ab08-4a94-a753-50e20c6e2f00")
-		(property "Reference" "BT+1"
-			(at 266.7 134.6199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "Battery cathode"
-			(at 266.7 137.1599 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
-			(at 264.16 135.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 264.16 135.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x01, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 264.16 135.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "aa02db73-abee-4083-8efa-8894af554567")
-		)
-		(instances
-			(project "FBT"
-				(path "/b59d625c-f89d-4113-8c77-569da8af0dbc"
-					(reference "BT+1")
 					(unit 1)
 				)
 			)
@@ -5693,73 +5873,6 @@
 			(project "FBT"
 				(path "/b59d625c-f89d-4113-8c77-569da8af0dbc"
 					(reference "R2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x01")
-		(at 264.16 140.97 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "fc83d49c-8c24-4779-982c-1b6f0d61f39e")
-		(property "Reference" "BT-1"
-			(at 266.7 139.6999 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "Battery anode"
-			(at 266.7 142.2399 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x01_P2.54mm_Vertical"
-			(at 264.16 140.97 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 264.16 140.97 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x01, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 264.16 140.97 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "40cb5b3d-4715-49e5-99f0-034a54c976c1")
-		)
-		(instances
-			(project "FBT"
-				(path "/b59d625c-f89d-4113-8c77-569da8af0dbc"
-					(reference "BT-1")
 					(unit 1)
 				)
 			)

@@ -1,4 +1,4 @@
-25678386956009766
+25681892628079663
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -59178,6 +59178,13 @@ ESP32-C3
 61
 36
 Espressif
+ESP32-C3-Mini-V1
+
+
+0
+16
+16
+Espressif
 ESP32-C3-SuperMini_PLUS
 
 
@@ -70944,6 +70951,13 @@ LX-LBC3
 0
 4
 4
+My_Library
+LX-LBES-Big
+
+
+0
+6
+6
 My_Library
 LX_LBES
 

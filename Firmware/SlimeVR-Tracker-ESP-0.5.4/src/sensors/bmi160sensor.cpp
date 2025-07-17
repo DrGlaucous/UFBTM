@@ -1214,7 +1214,7 @@ void BMI160Sensor::getMagnetometerXYZFromBuffer(
 	*x = ((int16_t)data[0] << 8) | data[1];
 	*z = ((int16_t)data[2] << 8) | data[3];
 	*y = ((int16_t)data[4] << 8) | data[5];
-#elif BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMC
+#elif BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMC || BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMP
 	// qmc5883l -> 0 lsb 1 msb
 	// XYZ order
 	*x = ((int16_t)data[1] << 8) | data[0];

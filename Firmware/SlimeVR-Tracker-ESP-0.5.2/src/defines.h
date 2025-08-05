@@ -177,8 +177,8 @@ PIN_IMU_SDA, PRIMARY_IMU_OPTIONAL, BMI160_QMC_REMAP) \
 //  #define LED_PIN 2
 //  #define LED_INVERTED false
 #elif BOARD == BOARD_LOLIN_C3_MINI
-#define PIN_IMU_SDA 3
-#define PIN_IMU_SCL 2
+#define PIN_IMU_SDA 2 //3
+#define PIN_IMU_SCL 3 //2
 #define PIN_IMU_INT 1
 #define PIN_IMU_INT_2 0
 #define PIN_BATTERY_LEVEL 4

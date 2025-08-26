@@ -2,41 +2,44 @@
 #include <Arduino.h>
 #include "QMC5883P.h"
 
-#define PIN_IMU_SDA 3
-#define PIN_IMU_SCL 2
+#define PIN_IMU_SDA 2
+#define PIN_IMU_SCL 3
 // Wire.begin(static_cast<int>(PIN_IMU_SDA), static_cast<int>(PIN_IMU_SCL));
 // address: 0x2C
 
+#define SERL Serial1
+
 void setup() {
-	//Wire.begin(static_cast<int>(PIN_IMU_SDA), static_cast<int>(PIN_IMU_SCL));
-	Wire.begin();
+	Wire.begin(PIN_IMU_SDA, PIN_IMU_SCL);
+	//Wire.begin();
 
 	delay(1000);
 
-	Serial.begin(115200);
-	Serial.print("Magnetometer\n");
+	SERL.begin(115200, 134217756UL, 20, 21);
+	SERL.print("Magnetometer\n");
 }
 
 void loop() {
 
 
 	QMC5883P magneto = QMC5883P();
+	magneto.set_range(CONFIG_8GAUSS);
 	
-	Serial.print("Initialized\n");
+	SERL.print("Initialized\n");
 
 	while(1) {
 		if(magneto.data_ready() == 0) {
 			const uint16_t* data = magneto.read_raw();
 
-			Serial.print("");
-			Serial.print(data[0]);
-			Serial.print("\t");
-			Serial.print(data[1]);
-			Serial.print("\t");
-			Serial.print(data[2]);
-			Serial.print("\n");
+			SERL.print("");
+			SERL.print((int16_t)data[0]);
+			SERL.print("\t");
+			SERL.print((int16_t)data[1]);
+			SERL.print("\t");
+			SERL.print((int16_t)data[2]);
+			SERL.print("\n");
 
-			//Serial.printf("X:%d Y:%d Z:%d\n", data[0], data[1], data[2]);
+			//SERL.printf("X:%d Y:%d Z:%d\n", data[0], data[1], data[2]);
 			delay(50);
 		}
 	}

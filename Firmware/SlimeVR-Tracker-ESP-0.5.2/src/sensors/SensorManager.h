@@ -110,7 +110,8 @@ private:
 			return sensor;
 		}
 
-		uint8_t intPin = extraParam;
+		//bug: bad cast from int to u8: our remap config never makes it in here because of this.
+		int intPin = extraParam;
 		sensor = std::make_unique<ImuType>(
 			sensorID,
 			addrSuppl,

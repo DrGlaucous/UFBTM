@@ -30,12 +30,38 @@
 #define SECOND_IMU IMU
 #define BOARD BOARD_LOLIN_C3_MINI
 #define IMU_ROTATION DEG_270
-#define SECOND_IMU_ROTATION DEG_270
+#define SECOND_IMU_ROTATION DEG_0
 
 #define PRIMARY_IMU_OPTIONAL false
 #define SECONDARY_IMU_OPTIONAL true
 
 #define MAX_IMU_COUNT 2
+
+
+#include "sensors/axisremap.h"
+// #define BMI160_AXIS_REMAP_PRIMARY AXIS_REMAP_BUILD( \
+//   AXIS_REMAP_USE_X, \
+//   AXIS_REMAP_USE_YN, \
+//   AXIS_REMAP_USE_ZN, \
+//   \
+//   AXIS_REMAP_USE_XN, \
+//   AXIS_REMAP_USE_Y, \
+//   AXIS_REMAP_USE_ZN \
+// )
+
+#define BMI160_AXIS_REMAP_PRIMARY AXIS_REMAP_BUILD( \
+  AXIS_REMAP_USE_X, \
+  AXIS_REMAP_USE_Y, \
+  AXIS_REMAP_USE_Z, \
+  \
+  AXIS_REMAP_USE_ZN, \
+  AXIS_REMAP_USE_YN, \
+  AXIS_REMAP_USE_XN \
+)
+
+
+#define BMI160_AXIS_REMAP_SECONDARY BMI160_AXIS_REMAP_PRIMARY
+
 
 // Axis mapping example
 /*
@@ -56,7 +82,7 @@ PIN_IMU_SDA, PRIMARY_IMU_OPTIONAL, BMI160_QMC_REMAP) \
 		PIN_IMU_SCL,               \
 		PIN_IMU_SDA,               \
 		PRIMARY_IMU_OPTIONAL,      \
-		PIN_IMU_INT                \
+		BMI160_AXIS_REMAP_PRIMARY  \
 	)                              \
 	IMU_DESC_ENTRY(                \
 		SECOND_IMU,                \
@@ -65,7 +91,7 @@ PIN_IMU_SDA, PRIMARY_IMU_OPTIONAL, BMI160_QMC_REMAP) \
 		PIN_IMU_SCL,               \
 		PIN_IMU_SDA,               \
 		SECONDARY_IMU_OPTIONAL,    \
-		PIN_IMU_INT_2              \
+		BMI160_AXIS_REMAP_SECONDARY\
 	)
 #endif
 

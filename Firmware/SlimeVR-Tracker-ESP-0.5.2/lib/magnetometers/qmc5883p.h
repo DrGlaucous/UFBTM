@@ -21,15 +21,15 @@
 
 //oversampling rate
 #define QMP_CFG_OVR_SMPL8       0b00 << 4
-#define QMP_CFG_OVR_SMPL4       0b00 << 4
-#define QMP_CFG_OVR_SMPL2       0b00 << 4
-#define QMP_CFG_OVR_SMPL1       0b00 << 4
+#define QMP_CFG_OVR_SMPL4       0b01 << 4
+#define QMP_CFG_OVR_SMPL2       0b10 << 4
+#define QMP_CFG_OVR_SMPL1       0b11 << 4
 
 //downsampling rate
 #define QMP_CFG_DOWN_SMPL1      0b00 << 6
-#define QMP_CFG_DOWN_SMPL2      0b00 << 6
-#define QMP_CFG_DOWN_SMPL4      0b00 << 6
-#define QMP_CFG_DOWN_SMPL8      0b00 << 6
+#define QMP_CFG_DOWN_SMPL2      0b01 << 6
+#define QMP_CFG_DOWN_SMPL4      0b10 << 6
+#define QMP_CFG_DOWN_SMPL8      0b11 << 6
 
 
 //////////////////config register 2 (0x0B) (everything below)

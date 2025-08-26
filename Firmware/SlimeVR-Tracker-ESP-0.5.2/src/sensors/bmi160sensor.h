@@ -159,8 +159,10 @@ public:
 			  BMI160_ODR_MAG_MICROS / 1e6f
 		  ) {
 		if (axisRemapParam < 256) {
+			//Serial.printf("Using default remap, old: %d\n", axisRemapParam);
 			axisRemap = AXIS_REMAP_DEFAULT;
 		} else {
+			//Serial.printf("Using axis remap: %d\n", axisRemapParam);
 			axisRemap = axisRemapParam;
 		}
 	};

@@ -112,7 +112,7 @@ void BMI160Sensor::initQMP(BMI160MagRate magRate) {
 	delay(3);
 	imu.setMagRegister(
 		QMP_RA_CONTROL2,
-		QMP_CFG_RNG_12G
+		QMP_CFG_RNG_8G
 	);
 	delay(3);
 
@@ -697,7 +697,9 @@ void BMI160Sensor::onMagRawSample(uint32_t dtMicros, int16_t x, int16_t y, int16
 	Mxyz[1] = (sensor_real_t)y;
 	Mxyz[2] = (sensor_real_t)z;
 	applyMagCalibrationAndScale(Mxyz);
+	Serial.printf("X:%f\tY:%f\tZ:%f\t-->\t", Mxyz[0], Mxyz[1], Mxyz[2]);
 	remapMagnetometer(&Mxyz[0], &Mxyz[1], &Mxyz[2]);
+	Serial.printf("X:%f\tY:%f\tZ:%f\n", Mxyz[0], Mxyz[1], Mxyz[2]);
 	sfusion.updateMag(Mxyz);
 #endif
 }
@@ -1213,11 +1215,26 @@ void BMI160Sensor::getMagnetometerXYZFromBuffer(
 	*x = ((int16_t)data[0] << 8) | data[1];
 	*z = ((int16_t)data[2] << 8) | data[3];
 	*y = ((int16_t)data[4] << 8) | data[5];
-#elif (BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMC) || (BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMP)
+#elif (BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMC)
 	// qmc5883l -> 0 lsb 1 msb
 	// XYZ order
 	*x = ((int16_t)data[1] << 8) | data[0];
 	*y = ((int16_t)data[3] << 8) | data[2];
 	*z = ((int16_t)data[5] << 8) | data[4];
+#elif (BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMP)
+	// qmc5883p -> 0 lsb 1 msb
+	// XYZ order, but chip's axis itself is different
+	//I'm only going by the datasheets here, I haven't physically tested a QMC or HMC unfortunately... :(
+	//to perfectly convert the QMP to HMC, we need to:
+	//leave z alone
+	//send out Y as X
+	//invert X and send it out as Y
+	
+	*y = (((int16_t)data[1] << 8) | data[0]) * -1; //raw x
+	*x = ((int16_t)data[3] << 8) | data[2]; //raw y
+	*z = ((int16_t)data[5] << 8) | data[4]; //raw z
+
+	//Serial.printf("X:%d Y:%d Z:%d\n", *x, *y, *z);
+
 #endif
 }

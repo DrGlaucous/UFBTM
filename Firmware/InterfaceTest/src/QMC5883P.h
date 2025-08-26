@@ -89,7 +89,7 @@ class QMC5883P {
         I2Cdev::writeByte(QMC5883P_ADDRESS, 0x29, 0x06);
 
         //2 gauss, most sensitive
-        set_range(0);
+        set_range(CONFIG_2GAUSS);
 
         //initial config
         I2Cdev::writeByte(QMC5883P_ADDRESS, 0x0A, CR1_DOWN_SMPL8 | CR1_OVR_SMPL8 | CR1_ODR_200HZ | CR1_MODE_NORMAL);
@@ -97,7 +97,7 @@ class QMC5883P {
         //wait until data is ready
         data_ready();
 
-        set_range(0);
+        set_range(CONFIG_2GAUSS);
     }
 
 
@@ -141,9 +141,9 @@ class QMC5883P {
         _set_config(rate, 4, 2);
     }
 
-
+    //input: raw range value as defined by stuff like "CONFIG_2GAUSS"
     void set_range(uint8_t value) {
-        range = CONFIG_2GAUSS - value;
+        range = value; //CONFIG_2GAUSS - value;
         I2Cdev::writeByte(QMC5883P_ADDRESS, 0x0B, range << 2);
     }
 
@@ -165,14 +165,14 @@ class QMC5883P {
         return 0;
     }
 
-    //reads the most recent magnetometer values into the local buffer, returning an immutable refrence to the result
+    //reads the most recent magnetometer values into the local buffer, returning an immutable reference to the result
     const uint16_t* read_raw() {
         //read from the first 6 addresses into the local buffer
         I2Cdev::readBytes(QMC5883P_ADDRESS, 0x01, 6, (uint8_t*)xyz);
         return xyz; //little endian format
     }
 
-    //read the magnetometer values and scale them accordingly, returning an immutable refrence to the result
+    //read the magnetometer values and scale them accordingly, returning an immutable reference to the result
     const uint16_t* read_scaled() {
         read_raw();
         uint16_t scale = lsb_per_G[range];
@@ -182,6 +182,18 @@ class QMC5883P {
         xyz[1] /= scale;
         xyz[2] /= scale;
 
+        //note: according to the datasheet, the directions of this magnetometer are flipped around.
+        //the HMCL and the QMCL have the same coordinates
+        //HMC->QMP
+        //Z+ -> Z+
+        //X+ -> Y+
+        //Y+ -> X-
+
+        //to perfectly convert the QMP to HMC, we need to:
+        //leave z alone
+        //send out Y as X
+        //invert X and send it out as Y
+        
 
         return xyz;
 

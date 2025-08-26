@@ -35,6 +35,9 @@
 #include "nvs_flash.h"
 #endif
 
+//test: hacked-out global int for sensor remap
+int serialRemap = BMI160_AXIS_REMAP_PRIMARY;
+
 namespace SerialCommands {
 SlimeVR::Logging::Logger logger("SerialCommands");
 
@@ -406,12 +409,28 @@ void cmdTemperatureCalibration(CmdParser* parser) {
 	);
 }
 
+//test: magnetometer mapping without reflashing
+void cmdChangeAxisMapping(CmdParser* parser) {
+
+	char* newNumeric = parser->getCmdParam(1);
+	if(newNumeric != NULL) {
+		int remapValue = atoi(newNumeric);
+		serialRemap = remapValue;
+		Serial.printf("Set serial remap value to: %d\n", remapValue);
+	} else {
+		Serial.printf("USAGE: REMAP [integer]");
+	}
+}
+
+
 void setUp() {
 	cmdCallbacks.addCmd("SET", &cmdSet);
 	cmdCallbacks.addCmd("GET", &cmdGet);
 	cmdCallbacks.addCmd("FRST", &cmdFactoryReset);
 	cmdCallbacks.addCmd("REBOOT", &cmdReboot);
 	cmdCallbacks.addCmd("TCAL", &cmdTemperatureCalibration);
+
+	cmdCallbacks.addCmd("REMAP", &cmdChangeAxisMapping);
 }
 
 void update() { cmdCallbacks.updateCmdProcessing(&cmdParser, &cmdBuffer, &Serial); }

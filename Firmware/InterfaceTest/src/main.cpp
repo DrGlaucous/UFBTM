@@ -1,6 +1,7 @@
 #include <Wire.h>
 #include <Arduino.h>
 #include "QMC5883P.h"
+#include "LSM6DS3.h"
 
 #define PIN_IMU_SDA 2
 #define PIN_IMU_SCL 3
@@ -23,6 +24,7 @@ void loop() {
 
 
 	QMC5883P magneto = QMC5883P();
+	LSM6DS3 gyro = LSM6DS3(LSM6DS3_ADDRESS_LOW);
 	magneto.set_range(CONFIG_8GAUSS);
 	
 	SERL.print("Initialized\n");

@@ -30,13 +30,16 @@
 // #define BMI160_MAG_TYPE BMI160_MAG_TYPE_QMC
 #define BMI160_MAG_TYPE BMI160_MAG_TYPE_QMP
 
+//unused
 // Use VQF instead of mahony sensor fusion.
 // Features: rest bias estimation, magnetic distortion rejection.
-#define BMI160_USE_VQF true
+//#define BMI160_USE_VQF true
 
+//unused
 // Use BasicVQF instead of VQF (if BMI160_USE_VQF == true).
 // Disables the features above.
-#define BMI160_USE_BASIC_VQF false
+//#define BMI160_USE_BASIC_VQF false
+
 
 // Use temperature calibration.
 #define BMI160_USE_TEMPCAL true
@@ -56,7 +59,7 @@
 #define BMI160_ACCEL_CALIBRATION_METHOD ACCEL_CALIBRATION_METHOD_6POINT
 
 // How long to run magnetometer calibration for, if enabled and you have added a
-// magnetometer. Magnetometer not be used until you calibrate it. Disables this
+// magnetometer. Magnetometer will not be used until you calibrate it. Disables this
 // calibration step if value is 0. NOT USED if USE_6_AXIS == true Default: 20
 #define BMI160_CALIBRATION_MAG_SECONDS 20
 

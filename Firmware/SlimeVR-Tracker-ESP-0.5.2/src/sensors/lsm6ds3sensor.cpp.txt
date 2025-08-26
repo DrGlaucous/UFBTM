@@ -21,10 +21,7 @@
 	THE SOFTWARE.
 */
 
-#include "bmi160sensor.h"
-
-//test: get external sensor offsetting
-#include "../serial/serialcommands.h"
+#include "lsm6ds3sensor.h"
 
 #include <hmc5883l.h>
 #include <qmc5883l.h>
@@ -34,7 +31,7 @@
 
 #include "GlobalVars.h"
 
-void BMI160Sensor::initHMC(BMI160MagRate magRate) {
+void LSM6DS3Sensor::initHMC(BMI160MagRate magRate) {
 	/* Configure MAG interface and setup mode */
 	/* Set MAG interface normal power mode */
 	imu.setRegister(BMI160_RA_CMD, BMI160_CMD_MAG_MODE_NORMAL);
@@ -63,7 +60,7 @@ void BMI160Sensor::initHMC(BMI160MagRate magRate) {
 	imu.setRegister(BMI160_RA_MAG_IF_1_MODE, BMI160_MAG_DATA_MODE_6);
 }
 
-void BMI160Sensor::initQMC(BMI160MagRate magRate) {
+void LSM6DS3Sensor::initQMC(BMI160MagRate magRate) {
 	/* Configure MAG interface and setup mode */
 	/* Set MAG interface normal power mode */
 	imu.setRegister(BMI160_RA_CMD, BMI160_CMD_MAG_MODE_NORMAL);
@@ -92,7 +89,7 @@ void BMI160Sensor::initQMC(BMI160MagRate magRate) {
 	imu.setRegister(BMI160_RA_MAG_IF_1_MODE, BMI160_MAG_DATA_MODE_6);
 }
 
-void BMI160Sensor::initQMP(BMI160MagRate magRate) {
+void LSM6DS3Sensor::initQMP(BMI160MagRate magRate) {
 	/* Configure MAG interface and setup mode */
 	/* Set MAG interface normal power mode */
 	imu.setRegister(BMI160_RA_CMD, BMI160_CMD_MAG_MODE_NORMAL);
@@ -115,7 +112,7 @@ void BMI160Sensor::initQMP(BMI160MagRate magRate) {
 	delay(3);
 	imu.setMagRegister(
 		QMP_RA_CONTROL2,
-		QMP_CFG_RNG_8G
+		QMP_CFG_RNG_12G
 	);
 	delay(3);
 
@@ -129,7 +126,7 @@ void BMI160Sensor::initQMP(BMI160MagRate magRate) {
 
 
 
-void BMI160Sensor::motionSetup() {
+void LSM6DS3Sensor::motionSetup() {
 	// initialize device
 	imu.initialize(
 		addr,
@@ -325,7 +322,7 @@ void BMI160Sensor::motionSetup() {
 	working = true;
 }
 
-void BMI160Sensor::motionLoop() {
+void LSM6DS3Sensor::motionLoop() {
 #if ENABLE_INSPECTION
 	{
 		int16_t rX, rY, rZ, aX, aY, aZ;
@@ -486,7 +483,7 @@ void BMI160Sensor::motionLoop() {
 	}
 }
 
-void BMI160Sensor::readFIFO() {
+void LSM6DS3Sensor::readFIFO() {
 	if (!imu.getFIFOCount(&fifo.length)) {
 #if BMI160_DEBUG
 		numFIFOFailedReads++;
@@ -623,7 +620,7 @@ void BMI160Sensor::readFIFO() {
 	}
 }
 
-void BMI160Sensor::onGyroRawSample(uint32_t dtMicros, int16_t x, int16_t y, int16_t z) {
+void LSM6DS3Sensor::onGyroRawSample(uint32_t dtMicros, int16_t x, int16_t y, int16_t z) {
 #if BMI160_DEBUG
 	gyrReads++;
 #endif
@@ -667,7 +664,7 @@ void BMI160Sensor::onGyroRawSample(uint32_t dtMicros, int16_t x, int16_t y, int1
 
 	optimistic_yield(100);
 }
-void BMI160Sensor::onAccelRawSample(
+void LSM6DS3Sensor::onAccelRawSample(
 	uint32_t dtMicros,
 	int16_t x,
 	int16_t y,
@@ -690,7 +687,7 @@ void BMI160Sensor::onAccelRawSample(
 
 	optimistic_yield(100);
 }
-void BMI160Sensor::onMagRawSample(uint32_t dtMicros, int16_t x, int16_t y, int16_t z) {
+void LSM6DS3Sensor::onMagRawSample(uint32_t dtMicros, int16_t x, int16_t y, int16_t z) {
 #if BMI160_DEBUG
 	magReads++;
 #endif
@@ -700,15 +697,12 @@ void BMI160Sensor::onMagRawSample(uint32_t dtMicros, int16_t x, int16_t y, int16
 	Mxyz[1] = (sensor_real_t)y;
 	Mxyz[2] = (sensor_real_t)z;
 	applyMagCalibrationAndScale(Mxyz);
-	//test: see remapping in action
-	//Serial.printf("X:%f\tY:%f\tZ:%f\t-->\t", Mxyz[0], Mxyz[1], Mxyz[2]);
 	remapMagnetometer(&Mxyz[0], &Mxyz[1], &Mxyz[2]);
-	//Serial.printf("X:%f\tY:%f\tZ:%f\n", Mxyz[0], Mxyz[1], Mxyz[2]);
 	sfusion.updateMag(Mxyz);
 #endif
 }
 
-void BMI160Sensor::printTemperatureCalibrationState() {
+void LSM6DS3Sensor::printTemperatureCalibrationState() {
 	const auto degCtoF = [](float degC) { return (degC * 9.0f / 5.0f) + 32.0f; };
 
 	m_Logger.info("Sensor %i temperature calibration state:", sensorId);
@@ -735,7 +729,7 @@ void BMI160Sensor::printTemperatureCalibrationState() {
 		gyroTempCalibrator->config.getCalibrationDonePercent()
 	);
 }
-void BMI160Sensor::printDebugTemperatureCalibrationState() {
+void LSM6DS3Sensor::printDebugTemperatureCalibrationState() {
 	m_Logger.info(
 		"Sensor %i gyro odr %f hz, sensitivity %f lsb",
 		sensorId,
@@ -772,9 +766,9 @@ void BMI160Sensor::printDebugTemperatureCalibrationState() {
 		gyroTempCalibrator->config.cz[3]
 	);
 }
-void BMI160Sensor::saveTemperatureCalibration() { gyroTempCalibrator->saveConfig(); }
+void LSM6DS3Sensor::saveTemperatureCalibration() { gyroTempCalibrator->saveConfig(); }
 
-bool BMI160Sensor::getTemperature(float* out) {
+bool LSM6DS3Sensor::getTemperature(float* out) {
 // Middle value is 23 degrees C (0x0000)
 #define BMI160_ZERO_TEMP_OFFSET 23
 	// Temperature per step from -41 + 1/2^9 degrees C (0x8001) to 87 - 1/2^9 degrees C
@@ -788,7 +782,7 @@ bool BMI160Sensor::getTemperature(float* out) {
 	return false;
 }
 
-void BMI160Sensor::applyAccelCalibrationAndScale(sensor_real_t Axyz[3]) {
+void LSM6DS3Sensor::applyAccelCalibrationAndScale(sensor_real_t Axyz[3]) {
 	// apply offsets (bias) and scale factors from Magneto
 	if (isAccelCalibrated) {
 #if useFullCalibrationMatrix == true
@@ -813,7 +807,7 @@ void BMI160Sensor::applyAccelCalibrationAndScale(sensor_real_t Axyz[3]) {
 	Axyz[2] *= BMI160_ASCALE;
 }
 
-void BMI160Sensor::applyMagCalibrationAndScale(sensor_real_t Mxyz[3]) {
+void LSM6DS3Sensor::applyMagCalibrationAndScale(sensor_real_t Mxyz[3]) {
 #if !USE_6_AXIS
 // apply offsets and scale factors from Magneto
 #if useFullCalibrationMatrix == true
@@ -835,7 +829,7 @@ void BMI160Sensor::applyMagCalibrationAndScale(sensor_real_t Mxyz[3]) {
 #endif
 }
 
-bool BMI160Sensor::hasGyroCalibration() {
+bool LSM6DS3Sensor::hasGyroCalibration() {
 	for (int i = 0; i < 3; i++) {
 		if (m_Config.G_off[i] != 0.0) {
 			return true;
@@ -844,7 +838,7 @@ bool BMI160Sensor::hasGyroCalibration() {
 	return false;
 }
 
-bool BMI160Sensor::hasAccelCalibration() {
+bool LSM6DS3Sensor::hasAccelCalibration() {
 	for (int i = 0; i < 3; i++) {
 		if (m_Config.A_B[i] != 0.0 || m_Config.A_Ainv[0][i] != 0.0
 			|| m_Config.A_Ainv[1][i] != 0.0 || m_Config.A_Ainv[2][i] != 0.0) {
@@ -854,7 +848,7 @@ bool BMI160Sensor::hasAccelCalibration() {
 	return false;
 }
 
-bool BMI160Sensor::hasMagCalibration() {
+bool LSM6DS3Sensor::hasMagCalibration() {
 	for (int i = 0; i < 3; i++) {
 		if (m_Config.M_B[i] != 0.0 || m_Config.M_Ainv[0][i] != 0.0
 			|| m_Config.M_Ainv[1][i] != 0.0 || m_Config.M_Ainv[2][i] != 0.0) {
@@ -864,7 +858,7 @@ bool BMI160Sensor::hasMagCalibration() {
 	return false;
 }
 
-void BMI160Sensor::startCalibration(int calibrationType) {
+void LSM6DS3Sensor::startCalibration(int calibrationType) {
 	ledManager.on();
 
 	maybeCalibrateGyro();
@@ -890,7 +884,7 @@ void BMI160Sensor::startCalibration(int calibrationType) {
 	}
 }
 
-void BMI160Sensor::maybeCalibrateGyro() {
+void LSM6DS3Sensor::maybeCalibrateGyro() {
 #ifndef BMI160_CALIBRATION_GYRO_SECONDS
 	static_assert(false, "BMI160_CALIBRATION_GYRO_SECONDS not set in defines");
 #endif
@@ -958,7 +952,7 @@ void BMI160Sensor::maybeCalibrateGyro() {
 #endif
 }
 
-void BMI160Sensor::maybeCalibrateAccel() {
+void LSM6DS3Sensor::maybeCalibrateAccel() {
 #ifndef BMI160_ACCEL_CALIBRATION_METHOD
 	static_assert(false, "BMI160_ACCEL_CALIBRATION_METHOD not set in defines");
 #endif
@@ -1111,7 +1105,7 @@ void BMI160Sensor::maybeCalibrateAccel() {
 	m_Logger.debug("}");
 }
 
-void BMI160Sensor::maybeCalibrateMag() {
+void LSM6DS3Sensor::maybeCalibrateMag() {
 #if !USE_6_AXIS
 #ifndef BMI160_CALIBRATION_MAG_SECONDS
 	static_assert(false, "BMI160_CALIBRATION_MAG_SECONDS not set in defines");
@@ -1182,44 +1176,32 @@ void BMI160Sensor::maybeCalibrateMag() {
 #endif
 }
 
-void BMI160Sensor::remapGyroAccel(
+void LSM6DS3Sensor::remapGyroAccel(
 	sensor_real_t* x,
 	sensor_real_t* y,
 	sensor_real_t* z
 ) {
-	//test:
-	axisRemap = serialRemap;
 	remapAllAxis(AXIS_REMAP_GET_ALL_IMU(axisRemap), x, y, z);
 }
 
-void BMI160Sensor::remapMagnetometer(
+void LSM6DS3Sensor::remapMagnetometer(
 	sensor_real_t* x,
 	sensor_real_t* y,
 	sensor_real_t* z
 ) {
-	//test:
-	//we use a command to remap this stuff
-	axisRemap = serialRemap;
 	remapAllAxis(AXIS_REMAP_GET_ALL_MAG(axisRemap), x, y, z);
-
 }
 
-void BMI160Sensor::getRemappedRotation(int16_t* x, int16_t* y, int16_t* z) {
-	//test:
-	axisRemap = serialRemap;
-
+void LSM6DS3Sensor::getRemappedRotation(int16_t* x, int16_t* y, int16_t* z) {
 	imu.getRotation(x, y, z);
 	remapAllAxis(AXIS_REMAP_GET_ALL_IMU(axisRemap), x, y, z);
 }
-void BMI160Sensor::getRemappedAcceleration(int16_t* x, int16_t* y, int16_t* z) {
-	//test:
-	axisRemap = serialRemap;
-
+void LSM6DS3Sensor::getRemappedAcceleration(int16_t* x, int16_t* y, int16_t* z) {
 	imu.getAcceleration(x, y, z);
 	remapAllAxis(AXIS_REMAP_GET_ALL_IMU(axisRemap), x, y, z);
 }
 
-void BMI160Sensor::getMagnetometerXYZFromBuffer(
+void LSM6DS3Sensor::getMagnetometerXYZFromBuffer(
 	uint8_t* data,
 	int16_t* x,
 	int16_t* y,
@@ -1231,26 +1213,11 @@ void BMI160Sensor::getMagnetometerXYZFromBuffer(
 	*x = ((int16_t)data[0] << 8) | data[1];
 	*z = ((int16_t)data[2] << 8) | data[3];
 	*y = ((int16_t)data[4] << 8) | data[5];
-#elif (BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMC)
+#elif (BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMC) || (BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMP)
 	// qmc5883l -> 0 lsb 1 msb
 	// XYZ order
 	*x = ((int16_t)data[1] << 8) | data[0];
 	*y = ((int16_t)data[3] << 8) | data[2];
 	*z = ((int16_t)data[5] << 8) | data[4];
-#elif (BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMP)
-	// qmc5883p -> 0 lsb 1 msb
-	// XYZ order, but chip's axis itself is different
-	//I'm only going by the datasheets here, I haven't physically tested a QMC or HMC unfortunately... :(
-	//to perfectly convert the QMP to HMC, we need to:
-	//leave z alone
-	//send out Y as X
-	//invert X and send it out as Y
-	
-	*y = (((int16_t)data[1] << 8) | data[0]) * -1; //raw x
-	*x = ((int16_t)data[3] << 8) | data[2]; //raw y
-	*z = ((int16_t)data[5] << 8) | data[4]; //raw z
-
-	//Serial.printf("X:%d Y:%d Z:%d\n", *x, *y, *z);
-
 #endif
 }

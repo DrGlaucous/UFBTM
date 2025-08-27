@@ -34,12 +34,15 @@
 #include "sensor.h"
 #include "sensors/axisremap.h"
 
-#if BMI160_USE_VQF
+//if we're using VQF, we collect gyro data at a slower rate
+//#if BMI160_USE_VQF
+#if SENSOR_USE_VQF
 #if USE_6_AXIS
 #define BMI160_GYRO_RATE BMI160_GYRO_RATE_400HZ
 #else
 #define BMI160_GYRO_RATE BMI160_GYRO_RATE_200HZ
 #endif
+//otherwise, collect data at a faster rate
 #else
 #if USE_6_AXIS
 #define BMI160_GYRO_RATE BMI160_GYRO_RATE_800HZ

@@ -72,20 +72,20 @@ public:
 	}
 
 	virtual ~Sensor(){};
-	virtual void motionSetup(){};
-	virtual void postSetup(){};
-	virtual void motionLoop(){};
-	virtual void sendData();
-	virtual void setAcceleration(Vector3 a);
-	virtual void setFusedRotation(Quat r);
-	virtual void startCalibration(int calibrationType){};
-	virtual SensorStatus getSensorState();
-	virtual void printTemperatureCalibrationState();
-	virtual void printDebugTemperatureCalibrationState();
-	virtual void resetTemperatureCalibrationState();
-	virtual void saveTemperatureCalibration();
-	virtual void setFlag(uint16_t flagId, bool state){};
-	virtual uint16_t getSensorConfigData();
+	virtual void motionSetup(){}; //all
+	virtual void postSetup(){}; //BNO080
+	virtual void motionLoop(){}; //all
+	virtual void sendData(); //BNO080
+	virtual void setAcceleration(Vector3 a); //all
+	virtual void setFusedRotation(Quat r); //all
+	virtual void startCalibration(int calibrationType){}; //all
+	virtual SensorStatus getSensorState(); //bmi + error sensors
+	virtual void printTemperatureCalibrationState(); //bmi160
+	virtual void printDebugTemperatureCalibrationState(); //bmi160
+	virtual void resetTemperatureCalibrationState(); //bmi160
+	virtual void saveTemperatureCalibration(); //all
+	virtual void setFlag(uint16_t flagId, bool state){}; //mainly for BNO080
+	virtual uint16_t getSensorConfigData(); //defined in sensor.cpp
 	bool isWorking() { return working; };
 	bool getHadData() const { return hadData; };
 	bool isValid() { return sclPin != sdaPin; };

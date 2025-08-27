@@ -21,6 +21,10 @@
 	THE SOFTWARE.
 */
 
+
+//TODO: look at the lsm6ds3trc code and see if we can just use that...
+
+
 #ifndef SENSORS_BMI160SENSOR_H
 #define SENSORS_BMI160SENSOR_H
 
@@ -34,19 +38,23 @@
 #include "sensor.h"
 #include "sensors/axisremap.h"
 
-#if BMI160_USE_VQF
+/*
+//if we're using VQF, we collect gyro data at a slower rate
+#if SENSOR_USE_VQF
 #if USE_6_AXIS
-#define BMI160_GYRO_RATE BMI160_GYRO_RATE_400HZ
+#define LSM6DS3_GYRO_RATE BMI160_GYRO_RATE_400HZ
 #else
-#define BMI160_GYRO_RATE BMI160_GYRO_RATE_200HZ
+#define LSM6DS3_GYRO_RATE BMI160_GYRO_RATE_200HZ
 #endif
+//otherwise, collect data at a faster rate
 #else
 #if USE_6_AXIS
-#define BMI160_GYRO_RATE BMI160_GYRO_RATE_800HZ
+#define LSM6DS3_GYRO_RATE BMI160_GYRO_RATE_800HZ
 #else
-#define BMI160_GYRO_RATE BMI160_GYRO_RATE_400HZ
+#define LSM6DS3_GYRO_RATE BMI160_GYRO_RATE_400HZ
 #endif
 #endif
+
 #define BMI160_GYRO_RANGE BMI160_GYRO_RANGE_1000
 #define BMI160_GYRO_FILTER_MODE BMI160_DLPF_MODE_NORM
 
@@ -130,13 +138,14 @@ static_assert(
 	0x7FFF * BMI160_TEMP_CALIBRATION_REQUIRED_SAMPLES_PER_STEP < 0x7FFFFFFF,
 	"Temperature calibration sum overflow"
 );
+*/
 
 class LSM6DS3Sensor : public Sensor {
 public:
 	static constexpr uint8_t Address = 0x68;
 	static constexpr auto TypeID = ImuID::BMI160;
 
-	BMI160Sensor(
+	LSM6DS3Sensor(
 		uint8_t id,
 		uint8_t addrSuppl,
 		float rotation,
@@ -145,7 +154,7 @@ public:
 		int axisRemapParam
 	)
 		: Sensor(
-			"BMI160Sensor",
+			"LSM6DS3Sensor",
 			ImuID::BMI160,
 			id,
 			Address + addrSuppl,
@@ -164,10 +173,12 @@ public:
 			axisRemap = axisRemapParam;
 		}
 	};
-	~BMI160Sensor(){};
-	void initHMC(BMI160MagRate magRate);
-	void initQMC(BMI160MagRate magRate);
-	void initQMP(BMI160MagRate magRate);
+	~LSM6DS3Sensor(){};
+
+
+	void initHMC(int magRate);
+	void initQMC(int magRate);
+	void initQMP(int magRate);
 
 	void motionSetup() override final;
 	void motionLoop() override final;

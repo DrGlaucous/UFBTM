@@ -7,6 +7,9 @@
 
 #include "vqf.h"
 
+//test:
+//#include <Arduino.h>
+
 #include <algorithm>
 #include <limits>
 #define _USE_MATH_DEFINES
@@ -300,6 +303,10 @@ void VQF::updateMag(const vqf_real_t mag[3])
     vqf_real_t accGyrQuat[4];
     getQuat6D(accGyrQuat);
     quatRotate(accGyrQuat, mag, magEarth);
+
+    //test: see magEarth relative to mag
+    //Serial.printf("X:%f\tY:%f\tZ:%f\t-->\t", mag[0], mag[1], mag[2]);
+    //Serial.printf("X:%f\tY:%f\tZ:%f\n", magEarth[0], magEarth[1], magEarth[2]);
 
     if (params.magDistRejectionEnabled) {
         state.magNormDip[0] = norm(magEarth, 3);

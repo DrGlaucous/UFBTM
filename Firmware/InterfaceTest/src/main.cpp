@@ -31,14 +31,20 @@ void loop() {
 
 	while(1) {
 		if(magneto.data_ready() == 0) {
-			const uint16_t* data = magneto.read_raw();
+			const int16_t* data = magneto.read_mapped();
+
+			//in microteslas
+			float mtx = data[0] / ((float)magneto.lsb_per_G[CONFIG_8GAUSS]) * 100.0;
+			float mty = data[1] / ((float)magneto.lsb_per_G[CONFIG_8GAUSS]) * 100.0;
+			float mtz = data[2] / ((float)magneto.lsb_per_G[CONFIG_8GAUSS]) * 100.0;
+
 
 			SERL.print("");
-			SERL.print((int16_t)data[0]);
+			SERL.print(mtx);
 			SERL.print("\t");
-			SERL.print((int16_t)data[1]);
+			SERL.print(mty);
 			SERL.print("\t");
-			SERL.print((int16_t)data[2]);
+			SERL.print(mtz);
 			SERL.print("\n");
 
 			//SERL.printf("X:%d Y:%d Z:%d\n", data[0], data[1], data[2]);

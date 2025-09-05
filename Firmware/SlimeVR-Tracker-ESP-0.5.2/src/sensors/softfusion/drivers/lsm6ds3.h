@@ -45,8 +45,8 @@ struct LSM6DS3 {
 	static constexpr float AccTs = 1.0 / Freq;
 	static constexpr float MagTs = 1.0 / Freq;
 
-	static constexpr float GyroSensitivity = 28.571428571f;
-	static constexpr float AccelSensitivity = 4098.360655738f;
+	static constexpr float GyroSensitivity = 1000.0 / 35.0f;;
+	static constexpr float AccelSensitivity = 1000.0 / 0.244f;
 
 	I2CImpl i2c;
 	SlimeVR::Logging::Logger logger;

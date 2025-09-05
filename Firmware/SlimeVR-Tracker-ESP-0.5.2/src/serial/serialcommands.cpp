@@ -36,7 +36,7 @@
 #endif
 
 //test: hacked-out global int for sensor remap
-int serialRemap = BMI160_AXIS_REMAP_PRIMARY;
+//int serialRemap = BMI160_AXIS_REMAP_PRIMARY;
 
 namespace SerialCommands {
 SlimeVR::Logging::Logger logger("SerialCommands");
@@ -410,17 +410,17 @@ void cmdTemperatureCalibration(CmdParser* parser) {
 }
 
 //test: magnetometer mapping without reflashing
-void cmdChangeAxisMapping(CmdParser* parser) {
+// void cmdChangeAxisMapping(CmdParser* parser) {
 
-	char* newNumeric = parser->getCmdParam(1);
-	if(newNumeric != NULL) {
-		int remapValue = atoi(newNumeric);
-		serialRemap = remapValue;
-		Serial.printf("Set serial remap value to: %d\n", remapValue);
-	} else {
-		Serial.printf("USAGE: REMAP [integer]");
-	}
-}
+// 	char* newNumeric = parser->getCmdParam(1);
+// 	if(newNumeric != NULL) {
+// 		int remapValue = atoi(newNumeric);
+// 		serialRemap = remapValue;
+// 		Serial.printf("Set serial remap value to: %d\n", remapValue);
+// 	} else {
+// 		Serial.printf("USAGE: REMAP [integer]");
+// 	}
+// }
 
 
 void setUp() {
@@ -430,7 +430,8 @@ void setUp() {
 	cmdCallbacks.addCmd("REBOOT", &cmdReboot);
 	cmdCallbacks.addCmd("TCAL", &cmdTemperatureCalibration);
 
-	cmdCallbacks.addCmd("REMAP", &cmdChangeAxisMapping);
+	//test:
+	//cmdCallbacks.addCmd("REMAP", &cmdChangeAxisMapping);
 }
 
 void update() { cmdCallbacks.updateCmdProcessing(&cmdParser, &cmdBuffer, &Serial); }

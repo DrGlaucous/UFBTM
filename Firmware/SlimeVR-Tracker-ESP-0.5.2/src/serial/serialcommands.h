@@ -25,7 +25,7 @@
 #define SLIMEVR_SERIALCOMMANDS_H_
 
 //test: hacked-out global int for sensor remap
-extern int serialRemap;
+//extern int serialRemap;
 
 namespace SerialCommands {
 void setUp();

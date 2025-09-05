@@ -1,5 +1,15 @@
 # SlimeVR Tracker firmware for ESP
 
+## What is this Fork?
+
+This fork adds (potential? I can't actually test firsthand...) support for the LSD6DS3 IMU module under sensor fusion and fixes various bugs with the BMI160 + Magnetometer code. I've also added support for the qmc5883p magnetometer breakout, the latest knockoff to the HMC5883L and commonly marketed as such. These usually appear on the GY-271 breakout boards.
+
+I used 0.5.2 instead of a newer version because this version works stably on the ESP32C3 superminis I'm using with my specific homebuilt trackers (Mr and Ms tracker).
+
+
+
+## Description
+
 Firmware for ESP8266 / ESP32 microcontrollers and different IMU sensors to use them as a vive-like trackers in VR.
 
 Requires [SlimeVR Server](https://github.com/SlimeVR/SlimeVR-Server) to work with SteamVR and resolve pose. Should be compatible with [owoTrack](https://github.com/abb128/owo-track-driver), but is not guaranteed.
@@ -104,6 +114,22 @@ Firmware can work with both ESP8266 and ESP32. Please edit `defines.h` and set y
 ## Uploading On Linux
 
 Follow the instructions in this link [PlatformIO](https://docs.platformio.org/en/latest//faq.html#platformio-udev-rules), this should solve any permission denied errors
+
+
+
+
+## Extra notes for me
+
+How to configure magnetometer mapping:
+
+- Hack out the firmware to replace the acceleration-get code with magnetometer-get code (add acceleration update to `onMagRawSample`)
+- Upload the code to the controller, it will obviously break quite a few things, but the acceleration vector as seen in the slimeVR view will now the what direction the tracker thinks the magnetometer is.
+- (optionally) use a smartphone or similar device to see what the magnetic vector field in the local area is.
+- rotate the physical device so that one of the sides is in the same direction as that vector field.
+- see if the acceleration in the window matches this (if not, make note of what axis is really is, or if it's flipped)
+- repeat for all 3 axis and then re-adjust the mapping config in `defines.h`
+
+
 
 
 ## Contributions

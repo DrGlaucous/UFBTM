@@ -63,12 +63,13 @@ class QMC5883P {
     private:
 
 
-    //least significant bits per Gauss, used to scale with the range setting
-    const uint16_t lsb_per_G[4] = {1000, 2500, 3750, 15000};
     uint8_t range = CONFIG_2GAUSS;
 
     //buffer for raw data output
-    uint16_t xyz[3] = {};
+    int16_t xyz[3] = {};
+
+    //remapped data output: used to make the coordinates match that of the HMC5883L or QMC5883L
+    int16_t remap_xyz[3] = {};
 
 
 
@@ -82,6 +83,9 @@ class QMC5883P {
 
 
     public:
+
+    //least significant bits per Gauss, used to scale with the range setting
+    const int16_t lsb_per_G[4] = {1000, 2500, 3750, 15000};
 
     QMC5883P() {
 
@@ -166,21 +170,50 @@ class QMC5883P {
     }
 
     //reads the most recent magnetometer values into the local buffer, returning an immutable reference to the result
-    const uint16_t* read_raw() {
+    const int16_t* read_raw() {
         //read from the first 6 addresses into the local buffer
         I2Cdev::readBytes(QMC5883P_ADDRESS, 0x01, 6, (uint8_t*)xyz);
         return xyz; //little endian format
     }
 
     //read the magnetometer values and scale them accordingly, returning an immutable reference to the result
-    const uint16_t* read_scaled() {
+    const int16_t* read_scaled() {
         read_raw();
-        uint16_t scale = lsb_per_G[range];
+        int16_t scale = lsb_per_G[range];
 
         //re-scale the values
         xyz[0] /= scale;
         xyz[1] /= scale;
         xyz[2] /= scale;
+
+
+
+        return xyz;
+
+    }
+
+    //return remapped values only
+    const int16_t* read_mapped() {
+        read_raw();
+
+        //remap output
+        remap_xyz[0] = xyz[1];
+        remap_xyz[1] = xyz[0] * -1;
+        remap_xyz[2] = xyz[2];
+
+        return remap_xyz;
+    }
+
+    //return remapped values with proper scaling
+    const int16_t* read_scaled_mapped() {
+        read_scaled();
+
+        //remap output
+        remap_xyz[0] = xyz[1];
+        remap_xyz[1] = xyz[0] * -1;
+        remap_xyz[2] = xyz[2];
+
+        return remap_xyz;
 
         //note: according to the datasheet, the directions of this magnetometer are flipped around.
         //the HMCL and the QMCL have the same coordinates
@@ -193,12 +226,10 @@ class QMC5883P {
         //leave z alone
         //send out Y as X
         //invert X and send it out as Y
-        
 
-        return xyz;
+
 
     }
-
 
 
 };

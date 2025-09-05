@@ -24,7 +24,7 @@
 #include "bmi160sensor.h"
 
 //test: get external sensor offsetting
-#include "../serial/serialcommands.h"
+//#include "../serial/serialcommands.h"
 
 #include <hmc5883l.h>
 #include <qmc5883l.h>
@@ -677,6 +677,9 @@ void BMI160Sensor::onAccelRawSample(
 	accReads++;
 #endif
 
+	//test: comment this out when swapping acceleration and magnetic field
+
+
 	Axyz[0] = (sensor_real_t)x;
 	Axyz[1] = (sensor_real_t)y;
 	Axyz[2] = (sensor_real_t)z;
@@ -699,12 +702,35 @@ void BMI160Sensor::onMagRawSample(uint32_t dtMicros, int16_t x, int16_t y, int16
 	Mxyz[0] = (sensor_real_t)x;
 	Mxyz[1] = (sensor_real_t)y;
 	Mxyz[2] = (sensor_real_t)z;
+
+	//calibration is done before remapping, so changing the remapping doesn't affect iron data
 	applyMagCalibrationAndScale(Mxyz);
+
+	// Mxyz[0] = 0;
+	// Mxyz[1] = 0;
+	// Mxyz[2] = 0;
+
 	//test: see remapping in action
 	//Serial.printf("X:%f\tY:%f\tZ:%f\t-->\t", Mxyz[0], Mxyz[1], Mxyz[2]);
 	remapMagnetometer(&Mxyz[0], &Mxyz[1], &Mxyz[2]);
 	//Serial.printf("X:%f\tY:%f\tZ:%f\n", Mxyz[0], Mxyz[1], Mxyz[2]);
 	sfusion.updateMag(Mxyz);
+
+
+
+
+	//test: update acceleration fake for seeing magnetic field
+	// {
+	// 	Axyz[0] = Mxyz[0];
+	// 	Axyz[1] = Mxyz[1];
+	// 	Axyz[2] = Mxyz[2];
+	// 	Serial.printf("X:%f\tY:%f\tZ:%f\n", Axyz[0], Axyz[1], Axyz[2]);
+	// 	lastAxyz[0] = Axyz[0];
+	// 	lastAxyz[1] = Axyz[1];
+	// 	lastAxyz[2] = Axyz[2];
+	// 	sfusion.updateAcc(Axyz, (sensor_real_t)dtMicros * 1.0e-6);
+	// }
+
 #endif
 }
 
@@ -1188,7 +1214,7 @@ void BMI160Sensor::remapGyroAccel(
 	sensor_real_t* z
 ) {
 	//test:
-	axisRemap = serialRemap;
+	// axisRemap = serialRemap;
 	remapAllAxis(AXIS_REMAP_GET_ALL_IMU(axisRemap), x, y, z);
 }
 
@@ -1199,21 +1225,21 @@ void BMI160Sensor::remapMagnetometer(
 ) {
 	//test:
 	//we use a command to remap this stuff
-	axisRemap = serialRemap;
+	// axisRemap = serialRemap;
 	remapAllAxis(AXIS_REMAP_GET_ALL_MAG(axisRemap), x, y, z);
 
 }
 
 void BMI160Sensor::getRemappedRotation(int16_t* x, int16_t* y, int16_t* z) {
 	//test:
-	axisRemap = serialRemap;
+	// axisRemap = serialRemap;
 
 	imu.getRotation(x, y, z);
 	remapAllAxis(AXIS_REMAP_GET_ALL_IMU(axisRemap), x, y, z);
 }
 void BMI160Sensor::getRemappedAcceleration(int16_t* x, int16_t* y, int16_t* z) {
 	//test:
-	axisRemap = serialRemap;
+	// axisRemap = serialRemap;
 
 	imu.getAcceleration(x, y, z);
 	remapAllAxis(AXIS_REMAP_GET_ALL_IMU(axisRemap), x, y, z);
@@ -1249,8 +1275,6 @@ void BMI160Sensor::getMagnetometerXYZFromBuffer(
 	*y = (((int16_t)data[1] << 8) | data[0]) * -1; //raw x
 	*x = ((int16_t)data[3] << 8) | data[2]; //raw y
 	*z = ((int16_t)data[5] << 8) | data[4]; //raw z
-
-	//Serial.printf("X:%d Y:%d Z:%d\n", *x, *y, *z);
 
 #endif
 }

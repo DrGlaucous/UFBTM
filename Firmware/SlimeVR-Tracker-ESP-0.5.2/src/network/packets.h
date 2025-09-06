@@ -42,7 +42,7 @@
 #define PACKET_SENSOR_INFO 15
 // #define PACKET_ROTATION_2 16 // Deprecated
 #define PACKET_ROTATION_DATA 17
-#define PACKET_MAGNETOMETER_ACCURACY 18
+#define PACKET_MAGNETOMETER_ACCURACY 18 //not used here, and does nothing on the server
 #define PACKET_SIGNAL_STRENGTH 19
 #define PACKET_TEMPERATURE 20
 // #define PACKET_USER_ACTION 21 // Joycon buttons only currently

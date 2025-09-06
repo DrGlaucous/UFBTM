@@ -57,6 +57,11 @@ uint16_t configDataToNumber(SensorConfig* sensorConfig, bool magSupported) {
 			data += config->magEnabled;
 			break;
 		}
+		case SensorConfigType::BMI160: {
+			auto config = &sensorConfig->data.bmi160;
+			data += config->magEnabled;			
+			break;
+		}
 		case SensorConfigType::NONE:
 		default:
 			break;

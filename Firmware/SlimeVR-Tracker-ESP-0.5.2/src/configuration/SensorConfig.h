@@ -44,6 +44,9 @@ struct BMI160SensorConfig {
 
 	// calibration temperature for dynamic compensation
 	float temperature;
+
+	// true if the magnetometer should be used for compensation
+	bool magEnabled;
 };
 
 struct SoftFusionSensorConfig {

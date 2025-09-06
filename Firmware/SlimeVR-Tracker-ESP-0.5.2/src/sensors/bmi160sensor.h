@@ -34,22 +34,42 @@
 #include "sensor.h"
 #include "sensors/axisremap.h"
 
+
+//I wanted to make all these configs variable, but that requires reconfiguring the sensor itself, which is very complex.
+//instead, I will make it so that defining USE_6_AXIS will completely remove the ability to use a magnetometer.
+//having it disabled, the magnetometer is used, and can be enabled / disabled
+
 //if we're using VQF, we collect gyro data at a slower rate
-//#if BMI160_USE_VQF
 #if SENSOR_USE_VQF
-#if USE_6_AXIS
-#define BMI160_GYRO_RATE BMI160_GYRO_RATE_400HZ
-#else
-#define BMI160_GYRO_RATE BMI160_GYRO_RATE_200HZ
-#endif
+#define BMI160_GYRO_RATE_6 BMI160_GYRO_RATE_400HZ
+#define BMI160_GYRO_RATE_9 BMI160_GYRO_RATE_200HZ
 //otherwise, collect data at a faster rate
 #else
-#if USE_6_AXIS
-#define BMI160_GYRO_RATE BMI160_GYRO_RATE_800HZ
-#else
-#define BMI160_GYRO_RATE BMI160_GYRO_RATE_400HZ
+#define BMI160_GYRO_RATE_6 BMI160_GYRO_RATE_800HZ
+#define BMI160_GYRO_RATE_9 BMI160_GYRO_RATE_400HZ
 #endif
-#endif
+
+#define FLAG_SENSOR_BMI160_MAG_ENABLED 1
+
+
+//if we're using VQF, we collect gyro data at a slower rate
+//#if BMI160_USE_VQF
+// #if SENSOR_USE_VQF
+// #if USE_6_AXIS
+// #define BMI160_GYRO_RATE BMI160_GYRO_RATE_400HZ
+// #else
+// #define BMI160_GYRO_RATE BMI160_GYRO_RATE_200HZ
+// #endif
+// //otherwise, collect data at a faster rate
+// #else
+// #if USE_6_AXIS
+// #define BMI160_GYRO_RATE BMI160_GYRO_RATE_800HZ
+// #else
+// #define BMI160_GYRO_RATE BMI160_GYRO_RATE_400HZ
+// #endif
+// #endif
+
+
 #define BMI160_GYRO_RANGE BMI160_GYRO_RANGE_1000
 #define BMI160_GYRO_FILTER_MODE BMI160_DLPF_MODE_NORM
 
@@ -64,75 +84,114 @@
 #define BMI160_MAP_ODR_MICROS(micros)                          \
 	((uint16_t)((micros) / BMI160_TIMESTAMP_RESOLUTION_MICROS) \
 	 * BMI160_TIMESTAMP_RESOLUTION_MICROS)
-constexpr float BMI160_ODR_GYR_HZ = 25.0f * (1 << (BMI160_GYRO_RATE - 6));
-constexpr float BMI160_ODR_ACC_HZ = 12.5f * (1 << (BMI160_ACCEL_RATE - 5));
-constexpr float BMI160_ODR_GYR_MICROS
-	= BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_GYR_HZ * 1e6f);
-constexpr float BMI160_ODR_ACC_MICROS
-	= BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_ACC_HZ * 1e6f);
-#if !USE_6_AXIS
-// note: this value only sets polling and fusion update rate - HMC is internally sampled
-// at 75hz, QMC at 200hz
-#define BMI160_MAG_RATE BMI160_MAG_RATE_50HZ
-constexpr float BMI160_ODR_MAG_HZ = (25.0f / 32.0f) * (1 << (BMI160_MAG_RATE - 1));
-constexpr float BMI160_ODR_MAG_MICROS
-	= BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_MAG_HZ * 1e6f);
-#else
-constexpr float BMI160_ODR_MAG_HZ = 0;
-constexpr float BMI160_ODR_MAG_MICROS = 0;
-#endif
 
-constexpr uint16_t BMI160_SETTINGS_MAX_ODR_HZ
-	= max(max(BMI160_ODR_GYR_HZ, BMI160_ODR_ACC_HZ), BMI160_ODR_MAG_HZ);
-constexpr uint16_t BMI160_SETTINGS_MAX_ODR_MICROS
-	= BMI160_MAP_ODR_MICROS(1.0f / BMI160_SETTINGS_MAX_ODR_HZ * 1e6f);
 
-constexpr float BMI160_FIFO_AVG_DATA_FRAME_LENGTH
-	= (BMI160_SETTINGS_MAX_ODR_HZ * 1 + BMI160_ODR_GYR_HZ * BMI160_FIFO_G_LEN
-	   + BMI160_ODR_ACC_HZ * BMI160_FIFO_A_LEN + BMI160_ODR_MAG_HZ * BMI160_FIFO_M_LEN)
-	/ BMI160_SETTINGS_MAX_ODR_HZ;
-constexpr float BMI160_FIFO_READ_BUFFER_SIZE_MICROS = 30000;
-constexpr float BMI160_FIFO_READ_BUFFER_SIZE_SAMPLES
-	= BMI160_SETTINGS_MAX_ODR_HZ * BMI160_FIFO_READ_BUFFER_SIZE_MICROS / 1e6f;
-constexpr uint16_t BMI160_FIFO_MAX_LENGTH = 1024;
-constexpr uint16_t BMI160_FIFO_READ_BUFFER_SIZE_BYTES = min(
-	(float)BMI160_FIFO_MAX_LENGTH - 64,
-	BMI160_FIFO_READ_BUFFER_SIZE_SAMPLES* BMI160_FIFO_AVG_DATA_FRAME_LENGTH * 1.25f
-);
 
-// Typical sensitivity at 25C
-// See p. 9 of https://www.mouser.com/datasheet/2/783/BST-BMI160-DS000-1509569.pdf
-// #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 16.4f  // 2000 deg  0
-// #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 32.8f  // 1000 deg  1
-// #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 65.6f  // 500 deg   2
-// #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 131.2f // 250 deg   3
-// #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 262.4f // 125 deg   4
-constexpr double BMI160_GYRO_TYPICAL_SENSITIVITY_LSB
-	= (16.4f * (1 << BMI160_GYRO_RANGE));
+// constexpr float BMI160_ODR_GYR_HZ = 25.0f * (1 << (BMI160_GYRO_RATE - 6));
+// constexpr float BMI160_ODR_ACC_HZ = 12.5f * (1 << (BMI160_ACCEL_RATE - 5));
+
+
+// constexpr float BMI160_ODR_GYR_MICROS
+// 	= BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_GYR_HZ * 1e6f);
+
+// constexpr float BMI160_ODR_ACC_MICROS
+// 	= BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_ACC_HZ * 1e6f);
+
+
+// #if !USE_6_AXIS
+// // note: this value only sets polling and fusion update rate - HMC is internally sampled
+// // at 75hz, QMC at 200hz
+// #define BMI160_MAG_RATE BMI160_MAG_RATE_50HZ
+// constexpr float BMI160_ODR_MAG_HZ = (25.0f / 32.0f) * (1 << (BMI160_MAG_RATE - 1));
+// constexpr float BMI160_ODR_MAG_MICROS
+// 	= BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_MAG_HZ * 1e6f);
+// #else
+// constexpr float BMI160_ODR_MAG_HZ = 0;
+// constexpr float BMI160_ODR_MAG_MICROS = 0;
+// #endif
+
+
+
+// constexpr uint16_t BMI160_SETTINGS_MAX_ODR_HZ
+// 	= max(max(BMI160_ODR_GYR_HZ, BMI160_ODR_ACC_HZ), BMI160_ODR_MAG_HZ);
+// constexpr uint16_t BMI160_SETTINGS_MAX_ODR_MICROS
+// 	= BMI160_MAP_ODR_MICROS(1.0f / BMI160_SETTINGS_MAX_ODR_HZ * 1e6f);
+
+// constexpr float BMI160_FIFO_AVG_DATA_FRAME_LENGTH
+// 	= (BMI160_SETTINGS_MAX_ODR_HZ * 1 + BMI160_ODR_GYR_HZ * BMI160_FIFO_G_LEN
+// 	   + BMI160_ODR_ACC_HZ * BMI160_FIFO_A_LEN + BMI160_ODR_MAG_HZ * BMI160_FIFO_M_LEN)
+// 	/ BMI160_SETTINGS_MAX_ODR_HZ;
+
+// constexpr float BMI160_FIFO_READ_BUFFER_SIZE_MICROS = 30000;
+
+// constexpr float BMI160_FIFO_READ_BUFFER_SIZE_SAMPLES
+// 	= BMI160_SETTINGS_MAX_ODR_HZ * BMI160_FIFO_READ_BUFFER_SIZE_MICROS / 1e6f;
+
+// constexpr uint16_t BMI160_FIFO_MAX_LENGTH = 1024;
+
+// constexpr uint16_t BMI160_FIFO_READ_BUFFER_SIZE_BYTES = min(
+// 	(float)BMI160_FIFO_MAX_LENGTH - 64,
+// 	BMI160_FIFO_READ_BUFFER_SIZE_SAMPLES* BMI160_FIFO_AVG_DATA_FRAME_LENGTH * 1.25f
+// );
+
+
+
+// // Typical sensitivity at 25C
+// // See p. 9 of https://www.mouser.com/datasheet/2/783/BST-BMI160-DS000-1509569.pdf
+// // #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 16.4f  // 2000 deg  0
+// // #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 32.8f  // 1000 deg  1
+// // #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 65.6f  // 500 deg   2
+// // #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 131.2f // 250 deg   3
+// // #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 262.4f // 125 deg   4
+// constexpr double BMI160_GYRO_TYPICAL_SENSITIVITY_LSB
+// 	= (16.4f * (1 << BMI160_GYRO_RANGE));
+
+// constexpr std::pair<uint8_t, float> BMI160_ACCEL_SENSITIVITY_LSB_MAP[]
+// 	= {{BMI160_ACCEL_RANGE_2G, 16384.0f},
+// 	   {BMI160_ACCEL_RANGE_4G, 8192.0f},
+// 	   {BMI160_ACCEL_RANGE_8G, 4096.0f},
+// 	   {BMI160_ACCEL_RANGE_16G, 2048.0f}};
+// constexpr double BMI160_ACCEL_TYPICAL_SENSITIVITY_LSB
+// 	= BMI160_ACCEL_SENSITIVITY_LSB_MAP[BMI160_ACCEL_RANGE / 4].second;
+// constexpr double BMI160_ASCALE
+// 	= CONST_EARTH_GRAVITY / BMI160_ACCEL_TYPICAL_SENSITIVITY_LSB;
+
+// // Scale conversion steps: LSB/°/s -> °/s -> step/°/s -> step/rad/s
+// constexpr double BMI160_GSCALE
+// 	= ((32768. / BMI160_GYRO_TYPICAL_SENSITIVITY_LSB) / 32768.) * (PI / 180.0);
+
+// constexpr float targetSampleRateMs = 10.0f;
+// constexpr uint32_t targetSampleRateMicros = (uint32_t)targetSampleRateMs * 1e3;
+
+// constexpr uint32_t BMI160_TEMP_CALIBRATION_REQUIRED_SAMPLES_PER_STEP
+// 	= TEMP_CALIBRATION_SECONDS_PER_STEP / (BMI160_ODR_GYR_MICROS / 1e6);
+// static_assert(
+// 	0x7FFF * BMI160_TEMP_CALIBRATION_REQUIRED_SAMPLES_PER_STEP < 0x7FFFFFFF,
+// 	"Temperature calibration sum overflow"
+// );
+
+
+
+
+
+
+
+
+/////////////////////////some leftovers that don't need to be in the class:
 
 constexpr std::pair<uint8_t, float> BMI160_ACCEL_SENSITIVITY_LSB_MAP[]
 	= {{BMI160_ACCEL_RANGE_2G, 16384.0f},
 	   {BMI160_ACCEL_RANGE_4G, 8192.0f},
 	   {BMI160_ACCEL_RANGE_8G, 4096.0f},
 	   {BMI160_ACCEL_RANGE_16G, 2048.0f}};
-constexpr double BMI160_ACCEL_TYPICAL_SENSITIVITY_LSB
-	= BMI160_ACCEL_SENSITIVITY_LSB_MAP[BMI160_ACCEL_RANGE / 4].second;
-constexpr double BMI160_ASCALE
-	= CONST_EARTH_GRAVITY / BMI160_ACCEL_TYPICAL_SENSITIVITY_LSB;
 
-// Scale conversion steps: LSB/°/s -> °/s -> step/°/s -> step/rad/s
-constexpr double BMI160_GSCALE
-	= ((32768. / BMI160_GYRO_TYPICAL_SENSITIVITY_LSB) / 32768.) * (PI / 180.0);
-
+constexpr uint16_t BMI160_FIFO_MAX_LENGTH = 1024;
+constexpr float BMI160_FIFO_READ_BUFFER_SIZE_MICROS = 30000;
 constexpr float targetSampleRateMs = 10.0f;
-constexpr uint32_t targetSampleRateMicros = (uint32_t)targetSampleRateMs * 1e3;
 
-constexpr uint32_t BMI160_TEMP_CALIBRATION_REQUIRED_SAMPLES_PER_STEP
-	= TEMP_CALIBRATION_SECONDS_PER_STEP / (BMI160_ODR_GYR_MICROS / 1e6);
-static_assert(
-	0x7FFF * BMI160_TEMP_CALIBRATION_REQUIRED_SAMPLES_PER_STEP < 0x7FFFFFFF,
-	"Temperature calibration sum overflow"
-);
+
+
+///////////////////////Actual class
 
 class BMI160Sensor : public Sensor {
 public:
@@ -156,11 +215,16 @@ public:
 			sclPin,
 			sdaPin
 		)
-		, sfusion(
-			  BMI160_ODR_GYR_MICROS / 1e6f,
-			  BMI160_ODR_ACC_MICROS / 1e6f,
-			  BMI160_ODR_MAG_MICROS / 1e6f
-		  ) {
+
+		//we need to have these constants configured before we construct it, so this needs to be dynamically allocated
+		// , sfusion(
+		// 	  BMI160_ODR_GYR_MICROS / 1e6f,
+		// 	  BMI160_ODR_ACC_MICROS / 1e6f,
+		// 	  BMI160_ODR_MAG_MICROS / 1e6f
+		//   )
+		  
+		{
+		//determine if we use the passed-in remapping
 		if (axisRemapParam < 256) {
 			//Serial.printf("Using default remap, old: %d\n", axisRemapParam);
 			axisRemap = AXIS_REMAP_DEFAULT;
@@ -168,8 +232,22 @@ public:
 			//Serial.printf("Using axis remap: %d\n", axisRemapParam);
 			axisRemap = axisRemapParam;
 		}
+
+
+
+	}
+
+	~BMI160Sensor(){
+		//new: we have to de-alloc the values inside fifo now...
+		if(this->fifo.data != NULL) {
+			free(this->fifo.data);
+		}
+
+		if(this->sfusion != nullptr) {
+			delete sfusion;
+		}		
+
 	};
-	~BMI160Sensor(){};
 	void initHMC(BMI160MagRate magRate);
 	void initQMC(BMI160MagRate magRate);
 	void initQMP(BMI160MagRate magRate);
@@ -214,11 +292,13 @@ public:
 
 	bool getTemperature(float* out);
 
+	void setFlag(uint16_t flagId, bool state) override final;
+
 private:
 	BMI160 imu{};
 	int axisRemap;
 
-	SlimeVR::Sensors::SensorFusionRestDetect sfusion;
+	SlimeVR::Sensors::SensorFusionRestDetect *sfusion = nullptr;
 
 	// clock sync and sample timestamping
 	uint32_t sensorTime0 = 0;
@@ -227,7 +307,7 @@ private:
 	uint32_t localTime1 = 0;
 	double sensorTimeRatio = 1;
 	double sensorTimeRatioEma = 1;
-	double sampleDtMicros = BMI160_ODR_GYR_MICROS;
+	double sampleDtMicros = BMI160_ODR_GYR_MICROS; //re-provision this inside motionSetup
 	uint32_t syncLatencyMicros = 0;
 	uint32_t samplesSinceClockSync = 0;
 	uint32_t timestamp0 = 0;
@@ -250,8 +330,12 @@ private:
 	uint32_t lastTemperaturePacketSent = 0;
 
 	struct BMI160FIFO {
-		uint8_t data[BMI160_FIFO_READ_BUFFER_SIZE_BYTES];
-		uint16_t length;
+		//uint8_t data[BMI160_FIFO_READ_BUFFER_SIZE_BYTES];
+		uint8_t* data = NULL;
+		//size of our data buffer because we dynamically allocate it now, we can't rely on sizeof()
+		uint16_t data_alloc_size;
+
+		uint16_t length = 0;
 	} fifo{};
 	float temperature = 0;
 	GyroTemperatureCalibrator* gyroTempCalibrator = nullptr;
@@ -260,6 +344,7 @@ private:
 	sensor_real_t Mxyz[3] = {0};
 	sensor_real_t lastAxyz[3] = {0};
 
+	//must be live-initialized in sensorSetup
 	double gscaleX = BMI160_GSCALE;
 	double gscaleY = BMI160_GSCALE;
 	double gscaleZ = BMI160_GSCALE;
@@ -271,6 +356,57 @@ private:
 	bool isMagCalibrated = false;
 
 	SlimeVR::Configuration::BMI160SensorConfig m_Config = {};
+
+
+
+	////////////////////////////////////////////////////
+	//config constexprs re-defined as dynamics because of the now-dynamic magnetometer settings
+	//this is dirty, but I (might) clean it up once I verify it works properly
+	BMI160GyroRate BMI160_GYRO_RATE;
+	
+	float BMI160_ODR_GYR_HZ;
+	float BMI160_ODR_ACC_HZ;
+	float BMI160_ODR_GYR_MICROS;
+	float BMI160_ODR_ACC_MICROS;
+
+	BMI160MagRate BMI160_MAG_RATE = BMI160_MAG_RATE_50HZ;
+	float BMI160_ODR_MAG_HZ;
+	float BMI160_ODR_MAG_MICROS;
+
+	uint16_t BMI160_SETTINGS_MAX_ODR_HZ;
+	uint16_t BMI160_SETTINGS_MAX_ODR_MICROS;
+	float BMI160_FIFO_AVG_DATA_FRAME_LENGTH;
+	//float BMI160_FIFO_READ_BUFFER_SIZE_MICROS = 30000;
+	float BMI160_FIFO_READ_BUFFER_SIZE_SAMPLES;
+	//uint16_t BMI160_FIFO_MAX_LENGTH = 1024;
+	uint16_t BMI160_FIFO_READ_BUFFER_SIZE_BYTES;
+
+
+	double BMI160_GYRO_TYPICAL_SENSITIVITY_LSB;
+
+	// std::pair<uint8_t, float> BMI160_ACCEL_SENSITIVITY_LSB_MAP[4]
+	// 	= {{BMI160_ACCEL_RANGE_2G, 16384.0f},
+	// 	{BMI160_ACCEL_RANGE_4G, 8192.0f},
+	// 	{BMI160_ACCEL_RANGE_8G, 4096.0f},
+	// 	{BMI160_ACCEL_RANGE_16G, 2048.0f}};
+
+
+	double BMI160_ACCEL_TYPICAL_SENSITIVITY_LSB;
+	double BMI160_ASCALE;
+	double BMI160_GSCALE;
+
+	//float targetSampleRateMs = 10.0f;
+	uint32_t targetSampleRateMicros;
+
+	uint32_t BMI160_TEMP_CALIBRATION_REQUIRED_SAMPLES_PER_STEP;
+
+
+	//other constexpr values defined inside the class body, but not up top in the header:
+	uint32_t alignmentBitmask;
+	float invPeriod;
+	uint16_t gyroCalibrationSamples;
+
+
 };
 
 #endif

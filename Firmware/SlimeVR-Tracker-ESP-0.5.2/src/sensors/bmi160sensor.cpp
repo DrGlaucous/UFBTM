@@ -130,6 +130,161 @@ void BMI160Sensor::initQMP(BMI160MagRate magRate) {
 
 
 void BMI160Sensor::motionSetup() {
+
+
+	// Initialize the configuration from persistent settings, must be done here because we use magStatus below.
+	{
+		SlimeVR::Configuration::SensorConfig sensorConfig
+			= configuration.getSensor(sensorId);
+		// If no compatible calibration data is found, the calibration data will just be zeroed out
+		switch (sensorConfig.type) {
+			case SlimeVR::Configuration::SensorConfigType::BMI160:
+				m_Config = sensorConfig.data.bmi160;
+
+				magStatus = m_Config.magEnabled ? MagnetometerStatus::MAG_ENABLED
+												: MagnetometerStatus::MAG_DISABLED;
+
+				break;
+
+			case SlimeVR::Configuration::SensorConfigType::NONE:
+				m_Logger.warn(
+					"No calibration data found for sensor %d, ignoring...",
+					sensorId
+				);
+				m_Logger.info("Calibration is advised");
+				break;
+
+			default:
+				//if not preset, use factory value to determine mag status
+				magStatus = USE_6_AXIS ? MagnetometerStatus::MAG_DISABLED
+									: MagnetometerStatus::MAG_ENABLED;
+
+				m_Logger.warn(
+					"Incompatible calibration data found for sensor %d, ignoring...",
+					sensorId
+				);
+				m_Logger.info("Calibration is advised");
+		}
+	}
+
+
+	//initialize the re-defined constexpr vars and preprocessor variables that change when we enable / disable the magnetometer
+	{
+
+		this->BMI160_GYRO_RATE = (magStatus == MagnetometerStatus::MAG_ENABLED) ? BMI160_GYRO_RATE_9 : BMI160_GYRO_RATE_6;
+
+
+		this->BMI160_ODR_GYR_HZ = 25.0f * (1 << (BMI160_GYRO_RATE - 6));
+		this->BMI160_ODR_ACC_HZ = 12.5f * (1 << (BMI160_ACCEL_RATE - 5));
+
+
+		this->BMI160_ODR_GYR_MICROS
+		= BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_GYR_HZ * 1e6f);
+
+		this->BMI160_ODR_ACC_MICROS
+		= BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_ACC_HZ * 1e6f);
+
+		// note: this value only sets polling and fusion update rate - HMC is internally sampled
+		// at 75hz, QMC at 200hz
+		if(magStatus == MagnetometerStatus::MAG_ENABLED) {
+			this->BMI160_ODR_MAG_HZ = 0;
+			this->BMI160_ODR_MAG_MICROS = 0;
+		} else {
+			this->BMI160_ODR_MAG_HZ = (25.0f / 32.0f) * (1 << (BMI160_MAG_RATE - 1));
+			this->BMI160_ODR_MAG_MICROS
+				= BMI160_MAP_ODR_MICROS(1.0f / BMI160_ODR_MAG_HZ * 1e6f);
+		}
+
+
+
+		this->BMI160_SETTINGS_MAX_ODR_HZ
+			= max(max(BMI160_ODR_GYR_HZ, BMI160_ODR_ACC_HZ), BMI160_ODR_MAG_HZ);
+		this->BMI160_SETTINGS_MAX_ODR_MICROS
+			= BMI160_MAP_ODR_MICROS(1.0f / BMI160_SETTINGS_MAX_ODR_HZ * 1e6f);
+
+		this->BMI160_FIFO_AVG_DATA_FRAME_LENGTH
+			= (BMI160_SETTINGS_MAX_ODR_HZ * 1 + BMI160_ODR_GYR_HZ * BMI160_FIFO_G_LEN
+			+ BMI160_ODR_ACC_HZ * BMI160_FIFO_A_LEN + BMI160_ODR_MAG_HZ * BMI160_FIFO_M_LEN)
+			/ BMI160_SETTINGS_MAX_ODR_HZ;
+
+
+		this->BMI160_FIFO_READ_BUFFER_SIZE_SAMPLES
+			= BMI160_SETTINGS_MAX_ODR_HZ * BMI160_FIFO_READ_BUFFER_SIZE_MICROS / 1e6f;
+
+
+		this->BMI160_FIFO_READ_BUFFER_SIZE_BYTES = min(
+			(float)BMI160_FIFO_MAX_LENGTH - 64,
+			BMI160_FIFO_READ_BUFFER_SIZE_SAMPLES* BMI160_FIFO_AVG_DATA_FRAME_LENGTH * 1.25f
+		);
+
+
+
+		// Typical sensitivity at 25C
+		// See p. 9 of https://www.mouser.com/datasheet/2/783/BST-BMI160-DS000-1509569.pdf
+		// #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 16.4f  // 2000 deg  0
+		// #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 32.8f  // 1000 deg  1
+		// #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 65.6f  // 500 deg   2
+		// #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 131.2f // 250 deg   3
+		// #define BMI160_GYRO_TYPICAL_SENSITIVITY_LSB 262.4f // 125 deg   4
+		this->BMI160_GYRO_TYPICAL_SENSITIVITY_LSB
+			= (16.4f * (1 << BMI160_GYRO_RANGE));
+		this->BMI160_ACCEL_TYPICAL_SENSITIVITY_LSB
+			= BMI160_ACCEL_SENSITIVITY_LSB_MAP[BMI160_ACCEL_RANGE / 4].second;
+		this->BMI160_ASCALE
+			= CONST_EARTH_GRAVITY / BMI160_ACCEL_TYPICAL_SENSITIVITY_LSB;
+
+
+		// Scale conversion steps: LSB/°/s -> °/s -> step/°/s -> step/rad/s
+		this->BMI160_GSCALE
+			= ((32768. / BMI160_GYRO_TYPICAL_SENSITIVITY_LSB) / 32768.) * (PI / 180.0);
+
+
+		this->targetSampleRateMicros = (uint32_t)targetSampleRateMs * 1e3;
+
+		this->BMI160_TEMP_CALIBRATION_REQUIRED_SAMPLES_PER_STEP
+			= TEMP_CALIBRATION_SECONDS_PER_STEP / (BMI160_ODR_GYR_MICROS / 1e6);
+		
+
+
+		assert(0x7FFF * BMI160_TEMP_CALIBRATION_REQUIRED_SAMPLES_PER_STEP < 0x7FFFFFFF);
+		//honestly kind of redundant; the assert takes care of this condition
+		if(0x7FFF * BMI160_TEMP_CALIBRATION_REQUIRED_SAMPLES_PER_STEP >= 0x7FFFFFFF) {
+			m_Logger.fatal("Temperature calibration sum overflow");
+			ledManager.pattern(25, 75, 200);
+			return;
+		}
+		// static_assert(
+		// 	0x7FFF * BMI160_TEMP_CALIBRATION_REQUIRED_SAMPLES_PER_STEP < 0x7FFFFFFF,
+		// 	"Temperature calibration sum overflow"
+		// );
+
+
+
+		//mallocate a dynamic pointer because we aren't statically evaluating this anymore.
+		if(this->fifo.data != NULL) {
+			free(this->fifo.data);
+		}
+		this->fifo.data_alloc_size = this->BMI160_FIFO_READ_BUFFER_SIZE_BYTES * sizeof(uint8_t);
+		this->fifo.data = (uint8_t*)malloc(this->fifo.data_alloc_size);
+
+		//other stuff from the body (used in gnew, etc.)
+		constexpr float GYRO_CALIBRATION_DURATION_SEC = BMI160_CALIBRATION_GYRO_SECONDS;
+		this->alignmentBitmask
+					= ~(0xFFFFFFFF << (16 - BMI160_GYRO_RATE));
+		this->invPeriod = 1.0f / BMI160_ODR_GYR_MICROS;
+		this->gyroCalibrationSamples
+			= GYRO_CALIBRATION_DURATION_SEC / (BMI160_ODR_GYR_MICROS / 1e6);
+
+		this->sampleDtMicros = this->BMI160_ODR_GYR_MICROS;
+		this->gscaleX = this->BMI160_GSCALE;
+		this->gscaleY = this->BMI160_GSCALE;
+		this->gscaleZ = this->BMI160_GSCALE;
+				
+
+			
+	}
+
+	
 	// initialize device
 	imu.initialize(
 		addr,
@@ -140,17 +295,22 @@ void BMI160Sensor::motionSetup() {
 		BMI160_ACCEL_RANGE,
 		BMI160_ACCEL_FILTER_MODE
 	);
-#if !USE_6_AXIS
-#if BMI160_MAG_TYPE == BMI160_MAG_TYPE_HMC
-	initHMC(BMI160_MAG_RATE);
-#elif BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMC
-	initQMC(BMI160_MAG_RATE);
-#elif BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMP
-	initQMP(BMI160_MAG_RATE);
-#else
-	static_assert(false, "Mag is enabled but BMI160_MAG_TYPE not set in defines");
-#endif
-#endif
+
+
+	//calibrate the magnetometer if enabled
+	if(magStatus == MagnetometerStatus::MAG_ENABLED) {
+		#if BMI160_MAG_TYPE == BMI160_MAG_TYPE_HMC
+			initHMC(BMI160_MAG_RATE);
+		#elif BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMC
+			initQMC(BMI160_MAG_RATE);
+		#elif BMI160_MAG_TYPE == BMI160_MAG_TYPE_QMP
+			initQMP(BMI160_MAG_RATE);
+		#else
+			static_assert(false, "Mag is enabled but BMI160_MAG_TYPE not set in defines");
+		#endif
+
+	}
+
 
 	if (!imu.testConnection()) {
 		m_Logger.fatal(
@@ -168,33 +328,6 @@ void BMI160Sensor::motionSetup() {
 		addr
 	);
 
-	// Initialize the configuration
-	{
-		SlimeVR::Configuration::SensorConfig sensorConfig
-			= configuration.getSensor(sensorId);
-		// If no compatible calibration data is found, the calibration data will just be
-		// zero-ed out
-		switch (sensorConfig.type) {
-			case SlimeVR::Configuration::SensorConfigType::BMI160:
-				m_Config = sensorConfig.data.bmi160;
-				break;
-
-			case SlimeVR::Configuration::SensorConfigType::NONE:
-				m_Logger.warn(
-					"No calibration data found for sensor %d, ignoring...",
-					sensorId
-				);
-				m_Logger.info("Calibration is advised");
-				break;
-
-			default:
-				m_Logger.warn(
-					"Incompatible calibration data found for sensor %d, ignoring...",
-					sensorId
-				);
-				m_Logger.info("Calibration is advised");
-		}
-	}
 
 	int16_t ax, ay, az;
 	getRemappedAcceleration(&ax, &ay, &az);
@@ -280,9 +413,12 @@ void BMI160Sensor::motionSetup() {
 
 	isGyroCalibrated = hasGyroCalibration();
 	isAccelCalibrated = hasAccelCalibration();
-#if !USE_6_AXIS
-	isMagCalibrated = hasMagCalibration();
-#endif
+// #if !USE_6_AXIS
+// 	isMagCalibrated = hasMagCalibration();
+// #endif
+	if(magStatus == MagnetometerStatus::MAG_ENABLED) {
+		isMagCalibrated = hasMagCalibration();
+	}
 	m_Logger.info(
 		"Calibration data for gyro: %s",
 		isGyroCalibrated ? "found" : "not found"
@@ -291,19 +427,28 @@ void BMI160Sensor::motionSetup() {
 		"Calibration data for accel: %s",
 		isAccelCalibrated ? "found" : "not found"
 	);
-#if !USE_6_AXIS
-	m_Logger.info(
-		"Calibration data for mag: %s",
-		isMagCalibrated ? "found" : "not found"
-	);
-#endif
+	if(magStatus == MagnetometerStatus::MAG_ENABLED) {
+		m_Logger.info(
+			"Calibration data for mag: %s",
+			isMagCalibrated ? "found" : "not found"
+		);
+	}
+// #if !USE_6_AXIS
+// 	m_Logger.info(
+// 		"Calibration data for mag: %s",
+// 		isMagCalibrated ? "found" : "not found"
+// 	);
+// #endif
 
 	imu.setFIFOHeaderModeEnabled(true);
 	imu.setGyroFIFOEnabled(true);
 	imu.setAccelFIFOEnabled(true);
-#if !USE_6_AXIS
-	imu.setMagFIFOEnabled(true);
-#endif
+// #if !USE_6_AXIS
+// 	imu.setMagFIFOEnabled(true);
+// #endif
+	if(magStatus == MagnetometerStatus::MAG_ENABLED) {
+		imu.setMagFIFOEnabled(true);
+	}
 	delay(4);
 	imu.resetFIFO();
 	delay(2);
@@ -323,6 +468,21 @@ void BMI160Sensor::motionSetup() {
 	}
 
 	working = true;
+
+
+	//make sure the old one is removed first
+	if(this->sfusion != nullptr) {
+		delete sfusion;
+	}	
+
+	//reconstruct sfusion class
+	this->sfusion = new SlimeVR::Sensors::SensorFusionRestDetect(
+			  BMI160_ODR_GYR_MICROS / 1e6f,
+			  BMI160_ODR_ACC_MICROS / 1e6f,
+			  BMI160_ODR_MAG_MICROS / 1e6f
+		  );
+
+
 }
 
 void BMI160Sensor::motionLoop() {
@@ -349,6 +509,11 @@ void BMI160Sensor::motionLoop() {
 		);
 	}
 #endif
+
+
+	//assign a refrence to the sfusion pointer so I don't have to re-write as much:
+	SlimeVR::Sensors::SensorFusionRestDetect& sfusion = *this->sfusion;
+
 
 	{
 		uint32_t now = micros();
@@ -422,6 +587,7 @@ void BMI160Sensor::motionLoop() {
 				m_Logger.debug(
 					"readFIFO took %0.4f ms, read gyr %i acc %i mag %i rest %i resets "
 					"%i readerrs %i type " SENSOR_FUSION_TYPE_STRING,
+					//" last gy: %f %f %f  last acc: %f %f %f  last mag %f %f %f",
 					((float)cpuUsageMicros / 1e3f),
 					gyrReads,
 					accReads,
@@ -429,6 +595,9 @@ void BMI160Sensor::motionLoop() {
 					restDetected,
 					numFIFODropped,
 					numFIFOFailedReads
+					//, Gxyz[0], Gxyz[1], Gxyz[2],
+					//Axyz[0], Axyz[1], Axyz[2],
+					//Mxyz[0], Mxyz[1], Mxyz[2]
 				);
 
 				cpuUsageMicros = 0;
@@ -497,7 +666,7 @@ void BMI160Sensor::readFIFO() {
 	if (fifo.length <= 1) {
 		return;
 	}
-	if (fifo.length > sizeof(fifo.data)) {
+	if (fifo.length > fifo.data_alloc_size) {
 #if BMI160_DEBUG
 		numFIFODropped++;
 #endif
@@ -517,10 +686,10 @@ void BMI160Sensor::readFIFO() {
 	int16_t gx, gy, gz;
 	int16_t ax, ay, az;
 	bool gnew, anew;
-#if !USE_6_AXIS
+//#if !USE_6_AXIS
 	int16_t mx, my, mz;
 	bool mnew;
-#endif
+//#endif
 
 	uint8_t header;
 	for (uint32_t i = 0; i < fifo.length;) {
@@ -550,17 +719,18 @@ void BMI160Sensor::readFIFO() {
 			}
 			gnew = false;
 			anew = false;
-#if !USE_6_AXIS
+//#if !USE_6_AXIS
 			mnew = false;
-#endif
+//#endif
 
 			// mag
-			if (header & BMI160_FIFO_HEADER_DATA_FRAME_FLAG_M) {
+			if (header & BMI160_FIFO_HEADER_DATA_FRAME_FLAG_M
+			&& magStatus == MagnetometerStatus::MAG_ENABLED) {
 				BMI160_FIFO_FRAME_ENSURE_BYTES_AVAILABLE(BMI160_FIFO_M_LEN);
-#if !USE_6_AXIS
+//#if !USE_6_AXIS
 				getMagnetometerXYZFromBuffer(&fifo.data[i], &mx, &my, &mz);
 				mnew = true;
-#endif
+//#endif
 				i += BMI160_FIFO_M_LEN;
 			}
 
@@ -587,17 +757,23 @@ void BMI160Sensor::readFIFO() {
 			}
 
 // gyro callback updates fusion and must be last
-#if !USE_6_AXIS
+//#if !USE_6_AXIS
 			if (mnew) {
 				onMagRawSample(BMI160_ODR_MAG_MICROS, mx, my, mz);
 			}
-#endif
+//#endif
 			if (anew) {
 				onAccelRawSample(BMI160_ODR_ACC_MICROS, ax, ay, az);
 			}
 			if (gnew) {
-				constexpr uint32_t alignmentBitmask
-					= ~(0xFFFFFFFF << (16 - BMI160_GYRO_RATE));
+
+				//test:
+				//Serial.printf("GyroRaw: %d %d, %d\n", gx, gy, gz);
+
+
+
+				//constexpr uint32_t alignmentBitmask
+				//	= ~(0xFFFFFFFF << (16 - BMI160_GYRO_RATE));
 				uint32_t alignmentOffset = (sensorTime1 & alignmentBitmask)
 										 * BMI160_TIMESTAMP_RESOLUTION_MICROS
 										 * sensorTimeRatioEma;
@@ -607,7 +783,7 @@ void BMI160Sensor::readFIFO() {
 						   + (++samplesSinceClockSync) * sampleDtMicros;
 				int32_t dtMicros = timestamp1 - timestamp0;
 
-				constexpr float invPeriod = 1.0f / BMI160_ODR_GYR_MICROS;
+				//constexpr float invPeriod = 1.0f / BMI160_ODR_GYR_MICROS;
 				int32_t sampleOffset = round((float)dtMicros * invPeriod) - 1;
 				if (abs(sampleOffset) > 3) {
 					dtMicros = sampleDtMicros;
@@ -629,7 +805,7 @@ void BMI160Sensor::onGyroRawSample(uint32_t dtMicros, int16_t x, int16_t y, int1
 #endif
 
 #if BMI160_USE_TEMPCAL
-	bool restDetected = sfusion.getRestDetected();
+	bool restDetected = sfusion->getRestDetected();
 	gyroTempCalibrator
 		->updateGyroTemperatureCalibration(temperature, restDetected, x, y, z);
 #endif
@@ -641,6 +817,9 @@ void BMI160Sensor::onGyroRawSample(uint32_t dtMicros, int16_t x, int16_t y, int1
 		= (sensor_real_t)((((double)y - m_Config.G_off[1]) * gscaleY));
 	gyroCalibratedStatic[2]
 		= (sensor_real_t)((((double)z - m_Config.G_off[2]) * gscaleZ));
+
+	//test:
+	//Serial.printf("GyroRaw: %d, \t %f, \t%f\n", x, gyroCalibratedStatic[0], gscaleX);
 
 #if BMI160_USE_TEMPCAL
 	float GOxyz[3];
@@ -663,7 +842,7 @@ void BMI160Sensor::onGyroRawSample(uint32_t dtMicros, int16_t x, int16_t y, int1
 	}
 	remapGyroAccel(&Gxyz[0], &Gxyz[1], &Gxyz[2]);
 
-	sfusion.updateGyro(Gxyz, (sensor_real_t)dtMicros * 1.0e-6);
+	sfusion->updateGyro(Gxyz, (sensor_real_t)dtMicros * 1.0e-6);
 
 	optimistic_yield(100);
 }
@@ -689,7 +868,7 @@ void BMI160Sensor::onAccelRawSample(
 	lastAxyz[1] = Axyz[1];
 	lastAxyz[2] = Axyz[2];
 
-	sfusion.updateAcc(Axyz, (sensor_real_t)dtMicros * 1.0e-6);
+	sfusion->updateAcc(Axyz, (sensor_real_t)dtMicros * 1.0e-6);
 
 	optimistic_yield(100);
 }
@@ -698,40 +877,39 @@ void BMI160Sensor::onMagRawSample(uint32_t dtMicros, int16_t x, int16_t y, int16
 	magReads++;
 #endif
 
-#if !USE_6_AXIS
-	Mxyz[0] = (sensor_real_t)x;
-	Mxyz[1] = (sensor_real_t)y;
-	Mxyz[2] = (sensor_real_t)z;
+//#if !USE_6_AXIS
+	if(magStatus == MagnetometerStatus::MAG_ENABLED) {
+		Mxyz[0] = (sensor_real_t)x;
+		Mxyz[1] = (sensor_real_t)y;
+		Mxyz[2] = (sensor_real_t)z;
 
-	//calibration is done before remapping, so changing the remapping doesn't affect iron data
-	applyMagCalibrationAndScale(Mxyz);
+		//calibration is done before remapping, so changing the remapping doesn't affect iron data
+		applyMagCalibrationAndScale(Mxyz);
 
-	// Mxyz[0] = 0;
-	// Mxyz[1] = 0;
-	// Mxyz[2] = 0;
+		// Mxyz[0] = 0;
+		// Mxyz[1] = 0;
+		// Mxyz[2] = 0;
 
-	//test: see remapping in action
-	//Serial.printf("X:%f\tY:%f\tZ:%f\t-->\t", Mxyz[0], Mxyz[1], Mxyz[2]);
-	remapMagnetometer(&Mxyz[0], &Mxyz[1], &Mxyz[2]);
-	//Serial.printf("X:%f\tY:%f\tZ:%f\n", Mxyz[0], Mxyz[1], Mxyz[2]);
-	sfusion.updateMag(Mxyz);
+		//test: see remapping in action
+		//Serial.printf("X:%f\tY:%f\tZ:%f\t-->\t", Mxyz[0], Mxyz[1], Mxyz[2]);
+		remapMagnetometer(&Mxyz[0], &Mxyz[1], &Mxyz[2]);
+		//Serial.printf("X:%f\tY:%f\tZ:%f\n", Mxyz[0], Mxyz[1], Mxyz[2]);
+		sfusion->updateMag(Mxyz);
 
+		//test: update acceleration fake for seeing magnetic field
+		// {
+		// 	Axyz[0] = Mxyz[0];
+		// 	Axyz[1] = Mxyz[1];
+		// 	Axyz[2] = Mxyz[2];
+		// 	Serial.printf("X:%f\tY:%f\tZ:%f\n", Axyz[0], Axyz[1], Axyz[2]);
+		// 	lastAxyz[0] = Axyz[0];
+		// 	lastAxyz[1] = Axyz[1];
+		// 	lastAxyz[2] = Axyz[2];
+		// 	sfusion.updateAcc(Axyz, (sensor_real_t)dtMicros * 1.0e-6);
+		// }
 
-
-
-	//test: update acceleration fake for seeing magnetic field
-	// {
-	// 	Axyz[0] = Mxyz[0];
-	// 	Axyz[1] = Mxyz[1];
-	// 	Axyz[2] = Mxyz[2];
-	// 	Serial.printf("X:%f\tY:%f\tZ:%f\n", Axyz[0], Axyz[1], Axyz[2]);
-	// 	lastAxyz[0] = Axyz[0];
-	// 	lastAxyz[1] = Axyz[1];
-	// 	lastAxyz[2] = Axyz[2];
-	// 	sfusion.updateAcc(Axyz, (sensor_real_t)dtMicros * 1.0e-6);
-	// }
-
-#endif
+	}
+//#endif
 }
 
 void BMI160Sensor::printTemperatureCalibrationState() {
@@ -840,7 +1018,7 @@ void BMI160Sensor::applyAccelCalibrationAndScale(sensor_real_t Axyz[3]) {
 }
 
 void BMI160Sensor::applyMagCalibrationAndScale(sensor_real_t Mxyz[3]) {
-#if !USE_6_AXIS
+//#if !USE_6_AXIS
 // apply offsets and scale factors from Magneto
 #if useFullCalibrationMatrix == true
 	float temp[3];
@@ -858,7 +1036,7 @@ void BMI160Sensor::applyMagCalibrationAndScale(sensor_real_t Mxyz[3]) {
 		Mxyz[i] = (Mxyz[i] - m_Config.M_B[i]);
 	}
 #endif
-#endif
+//#endif
 }
 
 bool BMI160Sensor::hasGyroCalibration() {
@@ -959,8 +1137,9 @@ void BMI160Sensor::maybeCalibrateGyro() {
 	ledManager.on();
 	m_Logger.info("Gyro calibration started...");
 
-	constexpr uint16_t gyroCalibrationSamples
-		= GYRO_CALIBRATION_DURATION_SEC / (BMI160_ODR_GYR_MICROS / 1e6);
+
+	//constexpr uint16_t gyroCalibrationSamples
+	//	= GYRO_CALIBRATION_DURATION_SEC / (BMI160_ODR_GYR_MICROS / 1e6);
 	int32_t rawGxyz[3] = {0};
 	for (int i = 0; i < gyroCalibrationSamples; i++) {
 		imu.waitForGyroDrdy();
@@ -1138,74 +1317,79 @@ void BMI160Sensor::maybeCalibrateAccel() {
 }
 
 void BMI160Sensor::maybeCalibrateMag() {
-#if !USE_6_AXIS
+
+
+	if(magStatus == MagnetometerStatus::MAG_ENABLED) {
+
+
+
 #ifndef BMI160_CALIBRATION_MAG_SECONDS
-	static_assert(false, "BMI160_CALIBRATION_MAG_SECONDS not set in defines");
+		static_assert(false, "BMI160_CALIBRATION_MAG_SECONDS not set in defines");
 #endif
 
 #if BMI160_CALIBRATION_MAG_SECONDS == 0
-	m_Logger.debug("Skipping magnetometer calibration");
-	return;
+		m_Logger.debug("Skipping magnetometer calibration");
+		return;
 #endif
 
-	MagnetoCalibration* magneto = new MagnetoCalibration();
+		MagnetoCalibration* magneto = new MagnetoCalibration();
 
-	constexpr uint8_t MAG_CALIBRATION_DELAY_SEC = 3;
-	constexpr float MAG_CALIBRATION_DURATION_SEC = BMI160_CALIBRATION_MAG_SECONDS;
-	m_Logger.info(
-		"After 3 seconds, rotate the device in figure 8 pattern while it's gathering "
-		"data (%.1f seconds)",
-		MAG_CALIBRATION_DURATION_SEC
-	);
-	for (uint8_t i = MAG_CALIBRATION_DELAY_SEC; i > 0; i--) {
-		m_Logger.info("%i...", i);
-		delay(1000);
-	}
-	ledManager.pattern(100, 100, 9);
-	delay(100);
-	ledManager.on();
-	m_Logger.debug("Gathering magnetometer data...");
-
-	constexpr float SAMPLE_DELAY_MS = 100.0f;
-	constexpr uint16_t magCalibrationSamples
-		= MAG_CALIBRATION_DURATION_SEC / (SAMPLE_DELAY_MS / 1e3f);
-
-	uint8_t magdata[6];
-	for (int i = 0; i < magCalibrationSamples; i++) {
-		ledManager.on();
-
-		int16_t mx, my, mz;
-		imu.getMagnetometerXYZBuffer(magdata);
-		getMagnetometerXYZFromBuffer(magdata, &mx, &my, &mz);
-		magneto->sample(mx, my, mz);
-
-		ledManager.off();
-		delay(SAMPLE_DELAY_MS);
-	}
-	ledManager.off();
-	m_Logger.debug("Calculating magnetometer calibration data...");
-
-	float M_BAinv[4][3];
-	magneto->current_calibration(M_BAinv);
-	delete magneto;
-
-	m_Logger.debug("[INFO] Magnetometer calibration matrix:");
-	m_Logger.debug("{");
-	for (int i = 0; i < 3; i++) {
-		m_Config.M_B[i] = M_BAinv[0][i];
-		m_Config.M_Ainv[0][i] = M_BAinv[1][i];
-		m_Config.M_Ainv[1][i] = M_BAinv[2][i];
-		m_Config.M_Ainv[2][i] = M_BAinv[3][i];
-		m_Logger.debug(
-			"  %f, %f, %f, %f",
-			M_BAinv[0][i],
-			M_BAinv[1][i],
-			M_BAinv[2][i],
-			M_BAinv[3][i]
+		constexpr uint8_t MAG_CALIBRATION_DELAY_SEC = 3;
+		constexpr float MAG_CALIBRATION_DURATION_SEC = BMI160_CALIBRATION_MAG_SECONDS;
+		m_Logger.info(
+			"After 3 seconds, rotate the device in figure 8 pattern while it's gathering "
+			"data (%.1f seconds)",
+			MAG_CALIBRATION_DURATION_SEC
 		);
+		for (uint8_t i = MAG_CALIBRATION_DELAY_SEC; i > 0; i--) {
+			m_Logger.info("%i...", i);
+			delay(1000);
+		}
+		ledManager.pattern(100, 100, 9);
+		delay(100);
+		ledManager.on();
+		m_Logger.debug("Gathering magnetometer data...");
+
+		constexpr float SAMPLE_DELAY_MS = 100.0f;
+		constexpr uint16_t magCalibrationSamples
+			= MAG_CALIBRATION_DURATION_SEC / (SAMPLE_DELAY_MS / 1e3f);
+
+		uint8_t magdata[6];
+		for (int i = 0; i < magCalibrationSamples; i++) {
+			ledManager.on();
+
+			int16_t mx, my, mz;
+			imu.getMagnetometerXYZBuffer(magdata);
+			getMagnetometerXYZFromBuffer(magdata, &mx, &my, &mz);
+			magneto->sample(mx, my, mz);
+
+			ledManager.off();
+			delay(SAMPLE_DELAY_MS);
+		}
+		ledManager.off();
+		m_Logger.debug("Calculating magnetometer calibration data...");
+
+		float M_BAinv[4][3];
+		magneto->current_calibration(M_BAinv);
+		delete magneto;
+
+		m_Logger.debug("[INFO] Magnetometer calibration matrix:");
+		m_Logger.debug("{");
+		for (int i = 0; i < 3; i++) {
+			m_Config.M_B[i] = M_BAinv[0][i];
+			m_Config.M_Ainv[0][i] = M_BAinv[1][i];
+			m_Config.M_Ainv[1][i] = M_BAinv[2][i];
+			m_Config.M_Ainv[2][i] = M_BAinv[3][i];
+			m_Logger.debug(
+				"  %f, %f, %f, %f",
+				M_BAinv[0][i],
+				M_BAinv[1][i],
+				M_BAinv[2][i],
+				M_BAinv[3][i]
+			);
+		}
+		m_Logger.debug("}");
 	}
-	m_Logger.debug("}");
-#endif
 }
 
 void BMI160Sensor::remapGyroAccel(
@@ -1278,3 +1462,24 @@ void BMI160Sensor::getMagnetometerXYZFromBuffer(
 
 #endif
 }
+
+
+//supported status on the computer is seen with: configDataToNumber(
+void BMI160Sensor::setFlag(uint16_t flagId, bool state) {
+
+	if (flagId == FLAG_SENSOR_BMI160_MAG_ENABLED) {
+		m_Config.magEnabled = state;
+		magStatus = state ? MagnetometerStatus::MAG_ENABLED
+						  : MagnetometerStatus::MAG_DISABLED;
+
+		SlimeVR::Configuration::SensorConfig config;
+		config.type = SlimeVR::Configuration::SensorConfigType::BMI160;
+		config.data.bmi160 = m_Config;
+		configuration.setSensor(sensorId, config);
+
+		// Reinitialize the sensor
+		motionSetup();
+	}
+
+}
+

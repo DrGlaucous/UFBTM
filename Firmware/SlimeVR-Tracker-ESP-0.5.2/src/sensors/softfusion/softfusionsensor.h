@@ -56,6 +56,7 @@ class SoftFusionSensor : public Sensor {
 		}
 	}
 
+	//check the sensor status at the whoami register
 	bool detected() const {
 		const auto value = m_sensor.i2c.readReg(imu::Regs::WhoAmI::reg);
 		if (imu::Regs::WhoAmI::value != value) {
@@ -83,6 +84,7 @@ class SoftFusionSensor : public Sensor {
 		}
 	}
 
+	//tell the gyro accelerometer magnetometer combiner to... create a new fusion object?
 	void recalcFusion() {
 		m_fusion = SensorFusionRestDetect(
 			m_calibration.G_Ts,
@@ -91,6 +93,7 @@ class SoftFusionSensor : public Sensor {
 		);
 	}
 
+	//take our axis values, apply temperature offset to them, and then update the m_fusion with that.
 	void processAccelSample(const int16_t xyz[3], const sensor_real_t timeDelta) {
 		sensor_real_t accelData[]
 			= {static_cast<sensor_real_t>(xyz[0]),
@@ -118,6 +121,7 @@ class SoftFusionSensor : public Sensor {
 		m_fusion.updateAcc(accelData, m_calibration.A_Ts);
 	}
 
+	//ditto, but for gyroscope
 	void processGyroSample(const int16_t xyz[3], const sensor_real_t timeDelta) {
 		const sensor_real_t scaledData[] = {
 			static_cast<sensor_real_t>(
@@ -133,13 +137,15 @@ class SoftFusionSensor : public Sensor {
 		m_fusion.updateGyro(scaledData, m_calibration.G_Ts);
 	}
 
+	//block for X seconds and pull all the sample data into dummy variables
 	void eatSamplesForSeconds(const uint32_t seconds) {
 		const auto targetDelay = millis() + 1000 * seconds;
 		auto lastSecondsRemaining = seconds;
 		while (millis() < targetDelay) {
 #ifdef ESP8266
-			ESP.wdtFeed();
+			ESP.wdtFeed(); //ensure the dog is fed while we're stuck in this while loop
 #endif
+			//log every second passed
 			auto currentSecondsRemaining = (targetDelay - millis()) / 1000;
 			if (currentSecondsRemaining != lastSecondsRemaining) {
 				m_Logger.info("%d...", currentSecondsRemaining + 1);
@@ -152,6 +158,7 @@ class SoftFusionSensor : public Sensor {
 		}
 	}
 
+	//block for X milliseconds and pull all data except the last one read into dummy variables
 	std::pair<RawVectorT, RawVectorT> eatSamplesReturnLast(const uint32_t milliseconds
 	) {
 		RawVectorT accel = {0};
@@ -179,6 +186,7 @@ public:
 	static constexpr auto TypeID = imu::Type;
 	static constexpr uint8_t Address = imu::Address;
 
+	//construct, filling the parent sensor, the IMU interface (as seen in the drivers folder), and the fusion algorithm
 	SoftFusionSensor(
 		uint8_t id,
 		uint8_t addrSuppl,
@@ -200,6 +208,7 @@ public:
 		, m_sensor(I2CImpl(imu::Address + addrSuppl), m_Logger) {}
 	~SoftFusionSensor() {}
 
+	//motion loop override for sensor fusion thingies; checks for fresh data and updates the fusion algorithm, then sends the data out
 	void motionLoop() override final {
 		sendTempIfNeeded();
 
@@ -218,10 +227,12 @@ public:
 				}
 			);
 			optimistic_yield(100);
+			//don't try to send out new data if the fusion algorithm hasn't changed
 			if (!m_fusion.isUpdated()) {
 				return;
 			}
 			hadData = true;
+			//set the update variable to false; we've got the newest ones
 			m_fusion.clearUpdated();
 		}
 
@@ -239,7 +250,9 @@ public:
 		}
 	}
 
+	//motion setup overrides for sensor fusion thingies; starts the sensor and does calibration as-needed
 	void motionSetup() override final {
+		//check the whoami register for a valid fusion sensor
 		if (!detected()) {
 			m_status = SensorStatus::SENSOR_ERROR;
 			return;
@@ -249,7 +262,7 @@ public:
 			= configuration.getSensor(sensorId);
 
 		// If no compatible calibration data is found, the calibration data will just be
-		// zero-ed out
+		// zeroed out
 		if (sensorCalibration.type == SlimeVR::Configuration::SensorConfigType::SFUSION
 			&& (sensorCalibration.data.sfusion.ImuType == imu::Type)
 			&& (sensorCalibration.data.sfusion.MotionlessDataLen
@@ -289,6 +302,7 @@ public:
 		m_status = SensorStatus::SENSOR_OK;
 		working = true;
 		[[maybe_unused]] auto lastRawSample = eatSamplesReturnLast(1000);
+		//sensor is inverted: start the calibration routine
 		if constexpr (UpsideDownCalibrationInit) {
 			auto gravity = static_cast<sensor_real_t>(
 				AScale * static_cast<sensor_real_t>(lastRawSample.first[2])
@@ -316,7 +330,10 @@ public:
 		}
 	}
 
+	//run the calibration routine for the IMU, 
 	void startCalibration(int calibrationType) override final {
+
+		//should be a switch statement, but I'm too lazy to change it right now; they've probably already updated it with the latest SVR firmware.
 		if (calibrationType == 0) {
 			// ALL
 			calibrateSampleRate();
@@ -367,6 +384,7 @@ public:
 		configuration.save();
 	}
 
+	//calibrate gyroscope
 	void calibrateGyroOffset() {
 		// Wait for sensor to calm down before calibration
 		m_Logger.info(
@@ -417,13 +435,16 @@ public:
 		);
 	}
 
+	//calibrate accelerometer
 	void calibrateAccel() {
+		//use the magnetometer ironing algorithm to calibrate the accelerometer, just like the BMI160 does
 		auto magneto = std::make_unique<MagnetoCalibration>();
 		m_Logger.info(
 			"Put the device into 6 unique orientations (all sides), leave it still and "
 			"do not hold/touch for %d seconds each",
 			AccelCalibRestSeconds
 		);
+		//wait for 3 seconds while the user positions it properly (note: we don't have to do 6-sided calibration if we're using the mag algorithm)
 		ledManager.on();
 		eatSamplesForSeconds(AccelCalibDelaySeconds);
 		ledManager.off();
@@ -473,6 +494,8 @@ public:
 						   )};
 
 					calibrationRestDetection.updateAcc(imu::AccTs, scaledData);
+
+					//makes sure you're not jiggling the IMU before it starts collecting more data
 					if (waitForMotion) {
 						if (!calibrationRestDetection.getRestDetected()) {
 							waitForMotion = false;
@@ -544,12 +567,14 @@ public:
 		m_Logger.debug("}");
 	}
 
+	//figure out how fast our IMUs can go.
 	void calibrateSampleRate() {
 		m_Logger.debug(
 			"Calibrating IMU sample rate in %d second(s)...",
 			SampleRateCalibDelaySeconds
 		);
 		ledManager.on();
+		//clear queue for the initial second delay
 		eatSamplesForSeconds(SampleRateCalibDelaySeconds);
 
 		uint32_t accelSamples = 0;
@@ -596,8 +621,10 @@ public:
 
 	SensorFusionRestDetect m_fusion;
 	T<I2CImpl> m_sensor;
+
+	// dummy initial calibration. Doesn't affect input data in this state
 	SlimeVR::Configuration::SoftFusionSensorConfig m_calibration
-		= {// let's create here transparent calibration that doesn't affect input data
+		= {
 		   .ImuType = {imu::Type},
 		   .MotionlessDataLen = {MotionlessCalibDataSize()},
 		   .A_B = {0.0, 0.0, 0.0},

@@ -147,6 +147,11 @@ void BMI160Sensor::motionSetup() {
 				break;
 
 			case SlimeVR::Configuration::SensorConfigType::NONE:
+
+				//if not preset, use factory value to determine mag status
+				magStatus = USE_6_AXIS ? MagnetometerStatus::MAG_DISABLED
+									: MagnetometerStatus::MAG_ENABLED;
+
 				m_Logger.warn(
 					"No calibration data found for sensor %d, ignoring...",
 					sensorId
@@ -155,7 +160,7 @@ void BMI160Sensor::motionSetup() {
 				break;
 
 			default:
-				//if not preset, use factory value to determine mag status
+				//see above
 				magStatus = USE_6_AXIS ? MagnetometerStatus::MAG_DISABLED
 									: MagnetometerStatus::MAG_ENABLED;
 

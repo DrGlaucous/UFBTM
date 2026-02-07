@@ -5582,6 +5582,8 @@ int32_t lsm6ds3_sh_cfg_write(stmdev_ctx_t *ctx, lsm6ds3_sh_cfg_write_t *val)
     slv0_add.rw_0 = 0;
     ret = lsm6ds3_write_reg(ctx, LSM6DS3_SLV0_ADD, (uint8_t*)&slv0_add, 1);
   }
+
+  //set the sub addrress
   if(ret == 0){
     ret = lsm6ds3_write_reg(ctx, LSM6DS3_SLV0_SUBADD,
                             &(val->slv0_subadd), 1);

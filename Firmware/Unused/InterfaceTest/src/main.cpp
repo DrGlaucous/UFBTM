@@ -68,7 +68,7 @@ void loop() {
 		float x, y, z = 0;
 
 		if (gyro.accelerationAvailable()) {
-			gyro.readAcceleration(x, y, z);
+			//gyro.readAcceleration(x, y, z);
 			gyro.readMagneto(x, y, z);
 			Serial.printf("Data: %.2f, %.2f, %.2f\n", x, y, z);
 		}

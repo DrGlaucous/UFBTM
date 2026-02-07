@@ -119,17 +119,54 @@ public:
 		uint8_t result = 0;
 		do {
 			result = readRegister(LSM6DS3_CTRL3_C);
-			Serial.printf("Result: %d\n", result);
+			//Serial.printf("Result: %d\n", result);
 		} while(result & 1);
 
 
 		//write to peripheral (leaving unfinished for now, we'll come back to it later)
-		if (0) {
+		if (1) {
+			//disable accelerometer
+			writeRegister(LSM6DS3_CTRL1_XL, 0b00000000);
+
+
 			//enable internal functions
 			writeRegister(LSM6DS3_CTRL10_C, (1 << 2));
 		
+
+
 			//enable master mode
 			writeRegister(LSM6DS3_MASTER_CONFIG, 1 << 2);
+
+			//svr configures the mag to run at 200hz, but grabs data at 50hz
+			//set up the QMP sensor
+			//put in continuous operation mode with highest speeds
+			I2Cdev::writeByte(QMP_DEVADDR, QMP_RA_CONTROL, 
+				QMP_CFG_MODE_CONT | QMP_CFG_ODR_200HZ | QMP_CFG_OVR_SMPL8 | QMP_CFG_DOWN_SMPL8
+			);
+			delay(3);
+			//set gauss range
+			I2Cdev::writeByte(QMP_DEVADDR,
+				QMP_RA_CONTROL2,
+				QMP_CFG_RNG_8G
+			);
+			delay(3);
+
+
+			// while(1) {
+			// 	uint8_t data[6] = {};
+			// 	I2Cdev::readBytes(QMP_DEVADDR, 0x01, 6, data);
+			// 	Serial.printf("%x|%x|%x|%x|%x|%x\n", data[0], data[1], data[2], data[3], data[4], data[5]);
+			// 	delay(100);
+			// }
+
+
+
+
+
+			//disable accelerometer
+			writeRegister(LSM6DS3_CTRL1_XL, 0b00000000);
+			//disable master mode
+			writeRegister(LSM6DS3_MASTER_CONFIG, 0);
 		}
 
 
@@ -140,6 +177,9 @@ public:
 
 		//device address + r/w mode
 		writeRegister(LSM6DS3_SLV0_ADD, (QMP_DEVADDR << 1) | 1);
+
+		//write sub-address (data starts at 0x01)
+		writeRegister(LSM6DS3_SLV0_SUBADD, 0x01);
 
 		//set byte length
 		uint8_t slave0_cfg = readRegister(LSM6DS3_SLAVE0_CONFIG);

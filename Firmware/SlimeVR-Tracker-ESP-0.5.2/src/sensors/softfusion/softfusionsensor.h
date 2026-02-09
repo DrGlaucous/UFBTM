@@ -56,6 +56,9 @@ class SoftFusionSensor : public Sensor {
 		}
 	}
 
+	//doesn't need to be in the sub-class
+	int axisRemap;
+
 	//check the sensor status at the whoami register
 	bool detected() const {
 		const auto value = m_sensor.i2c.readReg(imu::Regs::WhoAmI::reg);
@@ -118,12 +121,18 @@ class SoftFusionSensor : public Sensor {
 			   + m_calibration.A_Ainv[2][2] * tmp[2])
 			* AScale;
 
+		//remap
+		remapAllAxis(AXIS_REMAP_GET_ALL_IMU(axisRemap), &accelData[0], &accelData[1], &accelData[2]);
+
+
 		m_fusion.updateAcc(accelData, m_calibration.A_Ts);
 	}
 
 	//ditto, but for gyroscope
 	void processGyroSample(const int16_t xyz[3], const sensor_real_t timeDelta) {
-		const sensor_real_t scaledData[] = {
+
+		//apply scale
+		sensor_real_t gyroData[] = {
 			static_cast<sensor_real_t>(
 				GScale * (static_cast<sensor_real_t>(xyz[0]) - m_calibration.G_off[0])
 			),
@@ -134,8 +143,51 @@ class SoftFusionSensor : public Sensor {
 				GScale * (static_cast<sensor_real_t>(xyz[2]) - m_calibration.G_off[2])
 			)
 		};
-		m_fusion.updateGyro(scaledData, m_calibration.G_Ts);
+
+		//apply tempcal (todo: add this, see: bmi160sensor.cpp)
+
+
+		//remap (why wasn't this already here?!)
+		remapAllAxis(AXIS_REMAP_GET_ALL_IMU(axisRemap), &gyroData[0], &gyroData[1], &gyroData[2]);
+
+
+		m_fusion.updateGyro(gyroData, m_calibration.G_Ts);
 	}
+
+	//new: process magnetometer data now
+	void processMagSample(const int16_t xyz[3], const sensor_real_t timeDelta) {
+
+		//apply calibration offsets
+		sensor_real_t magData[]
+			= {static_cast<sensor_real_t>(xyz[0]),
+			   static_cast<sensor_real_t>(xyz[1]),
+			   static_cast<sensor_real_t>(xyz[2])};
+
+
+		//Serial.printf("  Pre Mag : %6f, %6f, %6f\n", magData[0 + 0], magData[0 + 1], magData[0 + 2]);
+
+		float tmp[3];
+		for (uint8_t i = 0; i < 3; i++) {
+			tmp[i] = (magData[i] - m_calibration.M_B[i]);
+		}
+
+		magData[0] = m_calibration.M_Ainv[0][0] * tmp[0] + m_calibration.M_Ainv[0][1] * tmp[1]
+			       + m_calibration.M_Ainv[0][2] * tmp[2];
+		magData[1] = m_calibration.M_Ainv[1][0] * tmp[0] + m_calibration.M_Ainv[1][1] * tmp[1]
+			       + m_calibration.M_Ainv[1][2] * tmp[2];
+		magData[2] = m_calibration.M_Ainv[2][0] * tmp[0] + m_calibration.M_Ainv[2][1] * tmp[1]
+			       + m_calibration.M_Ainv[2][2] * tmp[2];
+
+		//remap
+		remapAllAxis(AXIS_REMAP_GET_ALL_MAG(axisRemap), &magData[0], &magData[1], &magData[2]);
+
+		Serial.printf("Mag: %6f, %6f, %6f\n", magData[0 + 0], magData[0 + 1], magData[0 + 2]);
+
+		//update the sensor fusion
+		m_fusion.updateMag(magData, m_calibration.M_Ts);
+	}
+
+
 
 	//block for X seconds and pull all the sample data into dummy variables
 	void eatSamplesForSeconds(const uint32_t seconds) {
@@ -153,16 +205,18 @@ class SoftFusionSensor : public Sensor {
 			}
 			m_sensor.bulkRead(
 				[](const int16_t xyz[3], const sensor_real_t timeDelta) {},
+				[](const int16_t xyz[3], const sensor_real_t timeDelta) {},
 				[](const int16_t xyz[3], const sensor_real_t timeDelta) {}
 			);
 		}
 	}
 
 	//block for X milliseconds and pull all data except the last one read into dummy variables
-	std::pair<RawVectorT, RawVectorT> eatSamplesReturnLast(const uint32_t milliseconds
+	std::tuple<RawVectorT, RawVectorT, RawVectorT> eatSamplesReturnLast(const uint32_t milliseconds
 	) {
 		RawVectorT accel = {0};
 		RawVectorT gyro = {0};
+		RawVectorT mag = {0};
 		const auto targetDelay = millis() + milliseconds;
 		while (millis() < targetDelay) {
 			m_sensor.bulkRead(
@@ -175,11 +229,16 @@ class SoftFusionSensor : public Sensor {
 					gyro[0] = xyz[0];
 					gyro[1] = xyz[1];
 					gyro[2] = xyz[2];
+				},
+				[&](const int16_t xyz[3], const sensor_real_t timeDelta) {
+					mag[0] = xyz[0];
+					mag[1] = xyz[1];
+					mag[2] = xyz[2];
 				}
 			);
 			yield();
 		}
-		return std::make_pair(accel, gyro);
+		return std::make_tuple(accel, gyro, mag);
 	}
 
 public:
@@ -193,7 +252,10 @@ public:
 		float rotation,
 		uint8_t sclPin,
 		uint8_t sdaPin,
-		uint8_t
+		int axisRemapParam
+		//what is this? I think it's a pit for the axisRemapParam since this originally didn't use it.
+		//luckily, we can fix that. Goodbye unnamed uint8_t.
+		//uint8_t
 	)
 		: Sensor(
 			imu::Name,
@@ -205,7 +267,18 @@ public:
 			sdaPin
 		)
 		, m_fusion(imu::GyrTs, imu::AccTs, imu::MagTs)
-		, m_sensor(I2CImpl(imu::Address + addrSuppl), m_Logger) {}
+		, m_sensor(I2CImpl(imu::Address + addrSuppl), m_Logger) {
+
+			//determine if we use the passed-in remapping
+			if (axisRemapParam < 256) {
+				//Serial.printf("Using default remap, old: %d\n", axisRemapParam);
+				axisRemap = AXIS_REMAP_DEFAULT;
+			} else {
+				//Serial.printf("Using axis remap: %d\n", axisRemapParam);
+				axisRemap = axisRemapParam;
+			}
+		}
+
 	~SoftFusionSensor() {}
 
 	//motion loop override for sensor fusion thingies; checks for fresh data and updates the fusion algorithm, then sends the data out
@@ -224,6 +297,9 @@ public:
 				},
 				[&](const int16_t xyz[3], const sensor_real_t timeDelta) {
 					processGyroSample(xyz, timeDelta);
+				},
+				[&](const int16_t xyz[3], const sensor_real_t timeDelta) {
+					processMagSample(xyz, timeDelta);
 				}
 			);
 			optimistic_yield(100);
@@ -305,7 +381,7 @@ public:
 		//sensor is inverted: start the calibration routine
 		if constexpr (UpsideDownCalibrationInit) {
 			auto gravity = static_cast<sensor_real_t>(
-				AScale * static_cast<sensor_real_t>(lastRawSample.first[2])
+				AScale * static_cast<sensor_real_t>(std::get<0>(lastRawSample)[2])
 			);
 			m_Logger.info(
 				"Gravity read: %.1f (need < -7.5 to start calibration)",
@@ -316,7 +392,7 @@ public:
 				m_Logger.info("Flip front in 5 seconds to start calibration");
 				lastRawSample = eatSamplesReturnLast(5000);
 				gravity = static_cast<sensor_real_t>(
-					AScale * static_cast<sensor_real_t>(lastRawSample.first[2])
+					AScale * static_cast<sensor_real_t>(std::get<0>(lastRawSample)[2])
 				);
 				if (gravity > 7.5f) {
 					m_Logger.debug("Starting calibration...");
@@ -412,14 +488,15 @@ public:
 			ESP.wdtFeed();
 #endif
 			m_sensor.bulkRead(
-				[](const int16_t xyz[3], const sensor_real_t timeDelta) {},
+				[](const int16_t xyz[3], const sensor_real_t timeDelta) {}, //dummy
 				[&sumXYZ,
 				 &sampleCount](const int16_t xyz[3], const sensor_real_t timeDelta) {
 					sumXYZ[0] += xyz[0];
 					sumXYZ[1] += xyz[1];
 					sumXYZ[2] += xyz[2];
 					++sampleCount;
-				}
+				},
+				[](const int16_t xyz[3], const sensor_real_t timeDelta) {}
 			);
 		}
 
@@ -538,6 +615,7 @@ public:
 						samplesGathered = true;
 					}
 				},
+				[](const int16_t xyz[3], const sensor_real_t timeDelta) {},
 				[](const int16_t xyz[3], const sensor_real_t timeDelta) {}
 			);
 		}
@@ -579,6 +657,7 @@ public:
 
 		uint32_t accelSamples = 0;
 		uint32_t gyroSamples = 0;
+		uint32_t magSamples = 0;
 
 		const auto calibTarget = millis() + 1000 * SampleRateCalibSeconds;
 		m_Logger.debug("Counting samples now...");
@@ -590,6 +669,9 @@ public:
 				},
 				[&gyroSamples](const int16_t xyz[3], const sensor_real_t timeDelta) {
 					gyroSamples++;
+				},
+				[&magSamples](const int16_t xyz[3], const sensor_real_t timeDelta) {
+					magSamples++;
 				}
 			);
 			yield();
@@ -598,13 +680,15 @@ public:
 		const auto millisFromStart
 			= currentTime - (calibTarget - 1000 * SampleRateCalibSeconds);
 		m_Logger.debug(
-			"Collected %d gyro, %d acc samples during %d ms",
+			"Collected %d gyro, %d acc, $d mag samples during %d ms",
 			gyroSamples,
 			accelSamples,
+			magSamples,
 			millisFromStart
 		);
 		m_calibration.A_Ts = millisFromStart / (accelSamples * 1000.0);
 		m_calibration.G_Ts = millisFromStart / (gyroSamples * 1000.0);
+		m_calibration.M_Ts = millisFromStart / (magSamples * 1000.0);
 
 		m_Logger.debug(
 			"Gyro frequency %fHz, accel frequency: %fHz",

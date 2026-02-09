@@ -27,6 +27,84 @@
 #include <array>
 #include <cstdint>
 
+#include <hmc5883l.h>
+#include <qmc5883l.h>
+#include <qmc5883p.h>
+
+
+//just throw these in here for now. I'll format them properly once I get it working
+///////////////////////////////////////////////////////////////////////////
+//this is equivalent to LSM6DS3_ADDRESS_LOW
+#define LSM6DS3_ADDRESS 0x6A
+
+//a, b
+#define LSM6DS3_ADDRESS_LOW 0b1101010
+#define LSM6DS3_ADDRESS_HIGH 0b1101011
+
+//external sensor config registers
+#define LSM6DS3_FUNC_CFG_ACCESS 0x01
+#define LSM6DS3_SLV0_ADD 0x02 //external sensor address + r/w
+#define LSM6DS3_SLV0_SUBADD 0x03 //starting register address on external sensor
+#define LSM6DS3_SLAVE0_CONFIG 0x04 //configuration flags for the external sensor
+
+
+
+#define LSM6DS3_WHO_AM_I_REG 0X0F
+#define LSM6DS3_CTRL1_XL 0X10
+#define LSM6DS3_CTRL2_G 0X11
+#define LSM6DS3_CTRL3_C 0x12
+
+#define LSM6DS3_STATUS_REG 0X1E
+
+#define LSM6DS3_CTRL6_C 0X15
+#define LSM6DS3_CTRL7_G 0X16
+#define LSM6DS3_CTRL8_XL 0X17
+
+//for functions and i2c master mode
+#define LSM6DS3_CTRL10_C 0x19
+#define LSM6DS3_MASTER_CONFIG 0x1A
+
+#define LSM6DS3_OUT_TEMP_L 0X20
+
+#define LSM6DS3_OUTX_L_G 0X22
+#define LSM6DS3_OUTX_H_G 0X23
+#define LSM6DS3_OUTY_L_G 0X24
+#define LSM6DS3_OUTY_H_G 0X25
+#define LSM6DS3_OUTZ_L_G 0X26
+#define LSM6DS3_OUTZ_H_G 0X27
+
+#define LSM6DS3_OUTX_L_XL 0X28
+#define LSM6DS3_OUTX_H_XL 0X29
+#define LSM6DS3_OUTY_L_XL 0X2A
+#define LSM6DS3_OUTY_H_XL 0X2B
+#define LSM6DS3_OUTZ_L_XL 0X2C
+#define LSM6DS3_OUTZ_H_XL 0X2D
+
+#define LSM6DS3_SENSORHUB1_REG 0x2E
+#define LSM6DS3_SENSORHUB2_REG 0x2F
+#define LSM6DS3_SENSORHUB3_REG 0x30
+#define LSM6DS3_SENSORHUB4_REG 0x31
+#define LSM6DS3_SENSORHUB5_REG 0x32
+#define LSM6DS3_SENSORHUB6_REG 0x33
+#define LSM6DS3_SENSORHUB7_REG 0x34
+#define LSM6DS3_SENSORHUB8_REG 0x35
+#define LSM6DS3_SENSORHUB9_REG 0x36
+#define LSM6DS3_SENSORHUB10_REG 0x37
+#define LSM6DS3_SENSORHUB11_REG 0x38
+#define LSM6DS3_SENSORHUB12_REG 0x39
+
+#define LSM6DS3_FIFO_STATUS1 0x3A
+#define LSM6DS3_FIFO_STATUS2 0x3B
+#define LSM6DS3_FIFO_STATUS3 0x3C
+#define LSM6DS3_FIFO_STATUS4 0x3D
+
+//check if data is ready on the sensor hub
+#define LSM6DS3_FUNC_SRC 0x53
+///////////////////////////////////////////////////////////////////////////
+
+
+
+
 namespace SlimeVR::Sensors::SoftFusion::Drivers {
 
 // Driver uses acceleration range at 8g
@@ -92,12 +170,111 @@ struct LSM6DS3 {
 
 	bool initialize() {
 		// perform initialization step
+
+		//reset
 		i2c.writeReg(Regs::Ctrl3C::reg, Regs::Ctrl3C::valueSwReset);
 		delay(20);
+
+
+		//whoami has already been determined by this point
+
+
+		//configure the QMP sensor
+		//todo: make this other mags
+		if (1) {
+			//disable accelerometer
+			i2c.writeReg(LSM6DS3_CTRL1_XL, 0b00000000);
+
+			//enable internal functions
+			uint8_t old_val = i2c.readReg(LSM6DS3_CTRL10_C);
+			// while(1) {
+			// 	Serial.printf("%02X", old_val);
+			// 	delay(1000);
+			// }
+			i2c.writeReg(LSM6DS3_CTRL10_C, old_val | (1 << 2));
+
+			//enable master passthrough mode
+			i2c.writeReg(LSM6DS3_MASTER_CONFIG, 1 << 2);
+
+
+			//reset QMP. it doesn't like this for some reason... I'll remove it for now
+			//I2Cdev::writeByte(QMP_DEVADDR, QMP_RA_CONTROL2, QMP_CFG_SOFT_RESET);
+			//delay(20);
+
+
+			//svr configures the mag to run at 200hz, but grabs data at 50hz
+			//set up the QMP sensor
+			//put in continuous operation mode with highest speeds
+			I2Cdev::writeByte(QMP_DEVADDR, QMP_RA_CONTROL, 
+				QMP_CFG_MODE_CONT | QMP_CFG_ODR_200HZ | QMP_CFG_OVR_SMPL8 | QMP_CFG_DOWN_SMPL8
+			);
+			delay(3);
+			//set gauss range
+			I2Cdev::writeByte(QMP_DEVADDR,
+				QMP_RA_CONTROL2,
+				QMP_CFG_RNG_8G
+			);
+			delay(3);
+
+			// while(1) {
+			// 	uint8_t data[6] = {};
+			// 	I2Cdev::readBytes(QMP_DEVADDR, 0x01, 6, data);
+			// 	Serial.printf("%x|%x|%x|%x|%x|%x\n", data[0], data[1], data[2], data[3], data[4], data[5]);
+			// 	delay(100);
+			// }
+
+
+			//disable accelerometer
+			i2c.writeReg(LSM6DS3_CTRL1_XL, 0b00000000);
+			//disable master mode
+			i2c.writeReg(LSM6DS3_MASTER_CONFIG, 0);
+
+		}
+
+
+		//set up sensor hub
+		if (1) {
+			//enable function bank
+			i2c.writeReg(LSM6DS3_FUNC_CFG_ACCESS, (1 << 7));
+
+			//device address + r/w mode
+			i2c.writeReg(LSM6DS3_SLV0_ADD, (QMP_DEVADDR << 1) | 1);
+
+			//write sub-address (data starts at 0x01)
+			i2c.writeReg(LSM6DS3_SLV0_SUBADD, 0x01);
+
+			//set byte length
+			uint8_t slave0_cfg = i2c.readReg(LSM6DS3_SLAVE0_CONFIG);
+			slave0_cfg |= 6; //set to read 6 bytes
+			i2c.writeReg(LSM6DS3_SLAVE0_CONFIG, slave0_cfg);
+
+			//disable function bank
+			i2c.writeReg(LSM6DS3_FUNC_CFG_ACCESS, 0);
+
+			//enable internal functions
+			uint8_t old_val = i2c.readReg(LSM6DS3_CTRL10_C);
+			i2c.writeReg(LSM6DS3_CTRL10_C, old_val | (1 << 2));
+
+			//enable master
+			i2c.writeReg(LSM6DS3_MASTER_CONFIG, 1 | (1 << 3));
+
+		}
+
+
+
+		//set output data rate to 416 hz, range is 8g
 		i2c.writeReg(Regs::Ctrl1XL::reg, Regs::Ctrl1XL::value);
+
+		//set gyro to 416hz with 1000 dps
 		i2c.writeReg(Regs::Ctrl2G::reg, Regs::Ctrl2G::value);
+
+		//enable block data updating (new data doesn't go in until all old data is read out) and auto-increment (i2c doesn't have to specify addressing, default is on)
 		i2c.writeReg(Regs::Ctrl3C::reg, Regs::Ctrl3C::value);
+
+		//buffer config: no decimation for either accelerometer or gyroscope
 		i2c.writeReg(Regs::FifoCtrl3::reg, Regs::FifoCtrl3::value);
+
+		//buffer config: ODR speed is 833hz in continuous mode
 		i2c.writeReg(Regs::FifoCtrl5::reg, Regs::FifoCtrl5::value);
 		return true;
 	}
@@ -109,8 +286,12 @@ struct LSM6DS3 {
 		return result;
 	}
 
-	template <typename AccelCall, typename GyroCall>
-	void bulkRead(AccelCall&& processAccelSample, GyroCall&& processGyroSample) {
+	//weird nasty c++ casting. gross.
+	//this is the only read method called by the sensorfusion class
+	template <typename AccelCall, typename GyroCall, typename MagCall>
+	void bulkRead(AccelCall&& processAccelSample, GyroCall&& processGyroSample, MagCall&& processMagSample) {
+
+		//get fifo status1 and fifo status2
 		const auto read_result = i2c.readReg16(Regs::FifoStatus);
 		if (read_result & 0x4000) {  // overrun!
 			// disable and re-enable fifo to clear it
@@ -124,6 +305,7 @@ struct LSM6DS3 {
 		constexpr auto single_measurement_bytes
 			= sizeof(uint16_t) * single_measurement_words;
 
+		//also adding mag values in here, so make that 9 of them
 		std::array<int16_t, 60>
 			read_buffer;  // max 10 packages of 6 16bit values of data form fifo
 		const auto bytes_to_read = std::min(
@@ -138,6 +320,32 @@ struct LSM6DS3 {
 			bytes_to_read,
 			reinterpret_cast<uint8_t*>(read_buffer.data())
 		);
+
+
+		//in theory, we could probably use the FIFO to store mag samples too, but reading them direct seems to work ok
+		// for(uint16_t i = 0; i < bytes_to_read / sizeof(uint16_t); ++i) {
+		// 	Serial.printf("%04X", read_buffer[i]);
+		// }
+
+		//if (i2c.readReg(LSM6DS3_STATUS_REG) & 0x01)
+		if(bytes_to_read > 0)
+		{
+			//Serial.println();
+			//Serial.printf("Gyro: %6d, %6d, %6d ", read_buffer[0], read_buffer[0 + 1], read_buffer[0 + 2]);
+			//Serial.printf("Accel : %6d, %6d, %6d", read_buffer[0 + 3], read_buffer[0 + 4], read_buffer[0 + 5]);
+			
+			int16_t data[3];
+			i2c.readBytes(LSM6DS3_SENSORHUB1_REG, sizeof(data), (uint8_t *)data);
+			//i2c.readBytes(LSM6DS3_OUTX_L_XL, sizeof(data), (uint8_t *)data);
+
+			//Serial.printf("Start Mag : %6d, %6d, %6d ||| ", data[0 + 0], data[0 + 1], data[0 + 2]);
+			processMagSample(data, MagTs);
+		}
+		
+
+		
+
+
 		for (uint16_t i = 0; i < bytes_to_read / sizeof(uint16_t);
 			 i += single_measurement_words) {
 			processGyroSample(reinterpret_cast<const int16_t*>(&read_buffer[i]), GyrTs);

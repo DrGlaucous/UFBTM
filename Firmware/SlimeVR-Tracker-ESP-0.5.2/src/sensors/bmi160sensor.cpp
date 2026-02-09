@@ -1022,6 +1022,7 @@ void BMI160Sensor::applyAccelCalibrationAndScale(sensor_real_t Axyz[3]) {
 	Axyz[2] *= BMI160_ASCALE;
 }
 
+//I don't think we actually have scale factors here
 void BMI160Sensor::applyMagCalibrationAndScale(sensor_real_t Mxyz[3]) {
 //#if !USE_6_AXIS
 // apply offsets and scale factors from Magneto

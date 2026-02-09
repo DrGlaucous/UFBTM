@@ -26,7 +26,7 @@
 // ================================================
 
 // Set parameters of IMU and board used
-#define IMU IMU_LSM6DS3
+#define IMU IMU_BMI270
 #define SECOND_IMU IMU_BMI160
 #define BOARD BOARD_LOLIN_C3_MINI
 #define IMU_ROTATION DEG_270

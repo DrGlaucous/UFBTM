@@ -134,8 +134,13 @@ public:
 		
 
 
-			//enable master mode
+			//enable master passthrough mode
 			writeRegister(LSM6DS3_MASTER_CONFIG, 1 << 2);
+
+			//reset QMP
+			//I2Cdev::writeByte(QMP_DEVADDR, QMP_RA_CONTROL2, QMP_CFG_SOFT_RESET);
+			//delay(20);
+
 
 			//svr configures the mag to run at 200hz, but grabs data at 50hz
 			//set up the QMP sensor
@@ -152,12 +157,12 @@ public:
 			delay(3);
 
 
-			// while(1) {
-			// 	uint8_t data[6] = {};
-			// 	I2Cdev::readBytes(QMP_DEVADDR, 0x01, 6, data);
-			// 	Serial.printf("%x|%x|%x|%x|%x|%x\n", data[0], data[1], data[2], data[3], data[4], data[5]);
-			// 	delay(100);
-			// }
+			while(1) {
+				uint8_t data[6] = {};
+				I2Cdev::readBytes(QMP_DEVADDR, 0x01, 6, data);
+				Serial.printf("%x|%x|%x|%x|%x|%x\n", data[0], data[1], data[2], data[3], data[4], data[5]);
+				delay(100);
+			}
 
 
 
@@ -199,8 +204,8 @@ public:
 		//enable master
 		writeRegister(LSM6DS3_MASTER_CONFIG, 1 | (1 << 3));
 
-		//set output data rate to 52 hz
-		writeRegister(LSM6DS3_CTRL1_XL, 0b00110000);
+		//set output data rate to 208 hz
+		writeRegister(LSM6DS3_CTRL1_XL, 0b01100000);
 
 
 

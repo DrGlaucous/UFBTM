@@ -302,7 +302,7 @@ void BMI160Sensor::motionSetup() {
 	);
 
 
-	//calibrate the magnetometer if enabled
+	//initialize the magnetometer if enabled
 	if(magStatus == MagnetometerStatus::MAG_ENABLED) {
 		#if BMI160_MAG_TYPE == BMI160_MAG_TYPE_HMC
 			initHMC(BMI160_MAG_RATE);
@@ -1478,6 +1478,7 @@ void BMI160Sensor::setFlag(uint16_t flagId, bool state) {
 		magStatus = state ? MagnetometerStatus::MAG_ENABLED
 						  : MagnetometerStatus::MAG_DISABLED;
 
+		//update backend settings
 		SlimeVR::Configuration::SensorConfig config;
 		config.type = SlimeVR::Configuration::SensorConfigType::BMI160;
 		config.data.bmi160 = m_Config;

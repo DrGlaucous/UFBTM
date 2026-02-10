@@ -157,12 +157,18 @@ class SoftFusionSensor : public Sensor {
 	//new: process magnetometer data now
 	void processMagSample(const int16_t xyz[3], const sensor_real_t timeDelta) {
 
+		if(m_calibration.magEnabled == false) {
+			return;
+		}
+
+
 		//apply calibration offsets
 		sensor_real_t magData[]
 			= {static_cast<sensor_real_t>(xyz[0]),
 			   static_cast<sensor_real_t>(xyz[1]),
 			   static_cast<sensor_real_t>(xyz[2])};
 
+		
 
 		//Serial.printf("  Pre Mag : %6f, %6f, %6f\n", magData[0 + 0], magData[0 + 1], magData[0 + 2]);
 
@@ -181,7 +187,7 @@ class SoftFusionSensor : public Sensor {
 		//remap
 		remapAllAxis(AXIS_REMAP_GET_ALL_MAG(axisRemap), &magData[0], &magData[1], &magData[2]);
 
-		Serial.printf("Mag: %6f, %6f, %6f\n", magData[0 + 0], magData[0 + 1], magData[0 + 2]);
+		//Serial.printf("Mag: %6f, %6f, %6f\n", magData[0 + 0], magData[0 + 1], magData[0 + 2]);
 
 		//update the sensor fusion
 		m_fusion.updateMag(magData, m_calibration.M_Ts);
@@ -337,6 +343,7 @@ public:
 		SlimeVR::Configuration::SensorConfig sensorCalibration
 			= configuration.getSensor(sensorId);
 
+
 		// If no compatible calibration data is found, the calibration data will just be
 		// zeroed out
 		if (sensorCalibration.type == SlimeVR::Configuration::SensorConfigType::SFUSION
@@ -344,6 +351,15 @@ public:
 			&& (sensorCalibration.data.sfusion.MotionlessDataLen
 				== MotionlessCalibDataSize())) {
 			m_calibration = sensorCalibration.data.sfusion;
+
+			//m_Logger.debug("Mag status: %d", sensorCalibration.data.sfusion.magEnabled);
+
+			//restore magnetometer status
+			magStatus = m_calibration.magEnabled ? MagnetometerStatus::MAG_ENABLED
+												: MagnetometerStatus::MAG_DISABLED;
+
+			m_Logger.info("Calibration settings loaded for sensor %d", sensorId);
+
 			recalcFusion();
 		} else if (sensorCalibration.type == SlimeVR::Configuration::SensorConfigType::NONE) {
 			m_Logger.warn(
@@ -351,12 +367,22 @@ public:
 				sensorId
 			);
 			m_Logger.info("Calibration is advised");
+
+			//shoehorn test for now
+			magStatus = m_calibration.magEnabled ? MagnetometerStatus::MAG_ENABLED
+												: MagnetometerStatus::MAG_DISABLED;
+
 		} else {
 			m_Logger.warn(
 				"Incompatible calibration data found for sensor %d, ignoring...",
 				sensorId
 			);
 			m_Logger.info("Please recalibrate");
+
+			//shoehorn test for now
+			magStatus = m_calibration.magEnabled ? MagnetometerStatus::MAG_ENABLED
+												: MagnetometerStatus::MAG_DISABLED;
+
 		}
 
 		bool initResult = false;
@@ -366,7 +392,7 @@ public:
 			std::memcpy(&calibData, m_calibration.MotionlessData, sizeof(calibData));
 			initResult = m_sensor.initialize(calibData);
 		} else {
-			initResult = m_sensor.initialize();
+			initResult = m_sensor.initialize(magStatus);
 		}
 
 		if (!initResult) {
@@ -406,8 +432,29 @@ public:
 		}
 	}
 
+	//set flag (enable/disable magnetometer)
+	void setFlag(uint16_t flagId, bool state) {
+		if (flagId == FLAG_SENSOR_BMI160_MAG_ENABLED) {
+			m_calibration.magEnabled = state;
+			magStatus = state ? MagnetometerStatus::MAG_ENABLED
+							: MagnetometerStatus::MAG_DISABLED;
+
+			//update backend settings
+			SlimeVR::Configuration::SensorConfig config;
+			config.type = SlimeVR::Configuration::SensorConfigType::SFUSION;
+			config.data.sfusion = m_calibration;
+			configuration.setSensor(sensorId, config);
+
+			// Reinitialize the sensor
+			motionSetup();
+		}
+
+	}
+
 	//run the calibration routine for the IMU, 
 	void startCalibration(int calibrationType) override final {
+		
+		//Serial.printf("Requested calibration of type: %d\n", calibrationType);
 
 		//should be a switch statement, but I'm too lazy to change it right now; they've probably already updated it with the latest SVR firmware.
 		if (calibrationType == 0) {
@@ -427,6 +474,7 @@ public:
 			// on an incorrect starting point
 			calibrateGyroOffset();
 			calibrateAccel();
+			calibrateMag();
 		} else if (calibrationType == 1) {
 			calibrateSampleRate();
 		} else if (calibrationType == 2) {
@@ -446,6 +494,8 @@ public:
 				m_Logger.info("Sensor doesn't provide any custom motionless calibration"
 				);
 			}
+		} else if (calibrationType == 5) {
+			calibrateMag();
 		}
 
 		saveCalibration();
@@ -643,6 +693,103 @@ public:
 			);
 		}
 		m_Logger.debug("}");
+	}
+
+	//calibrate magnetometer (ripped from BMI160)
+	void calibrateMag() {
+		if(magStatus == MagnetometerStatus::MAG_ENABLED) {
+
+#ifndef BMI160_CALIBRATION_MAG_SECONDS
+			static_assert(false, "BMI160_CALIBRATION_MAG_SECONDS not set in defines");
+#endif
+
+#if BMI160_CALIBRATION_MAG_SECONDS == 0
+			m_Logger.debug("Skipping magnetometer calibration");
+			return;
+#endif
+
+			MagnetoCalibration* magneto = new MagnetoCalibration();
+
+			constexpr uint8_t MAG_CALIBRATION_DELAY_SEC = 3;
+			constexpr float MAG_CALIBRATION_DURATION_SEC = BMI160_CALIBRATION_MAG_SECONDS;
+			m_Logger.info(
+				"After 3 seconds, rotate the device in figure 8 pattern while it's gathering "
+				"data (%.1f seconds)",
+				MAG_CALIBRATION_DURATION_SEC
+			);
+			eatSamplesForSeconds(MAG_CALIBRATION_DELAY_SEC);
+			
+			//ledManager.pattern(100, 100, 9);
+			//delay(100);
+			ledManager.on();
+			m_Logger.debug("Gathering magnetometer data...");
+
+			constexpr float SAMPLE_DELAY_MS = 100.0f;
+			constexpr uint16_t magCalibrationSamples
+				= MAG_CALIBRATION_DURATION_SEC / (SAMPLE_DELAY_MS / 1e3f);
+			uint32_t last_time = millis();
+
+			uint8_t magdata[6];
+			for (int i = 0; i < magCalibrationSamples;) {
+				ledManager.on();
+
+				//int16_t mx, my, mz;
+				
+				//todo: read in fresh data
+				//imu.getMagnetometerXYZBuffer(magdata);
+				//getMagnetometerXYZFromBuffer(magdata, &mx, &my, &mz);
+
+				m_sensor.bulkRead(
+					[](const int16_t xyz[3], const sensor_real_t timeDelta) {},
+					[](const int16_t xyz[3], const sensor_real_t timeDelta) {},
+					[&](const int16_t xyz[3], const sensor_real_t timeDelta) {
+
+						//wait for the delay, then grab a new sample
+						if(last_time + (uint32_t)SAMPLE_DELAY_MS < millis()) {
+
+							ledManager.on();
+							last_time = millis();							
+							magneto->sample(xyz[0], xyz[1], xyz[2]);
+							i += 1;
+							ledManager.off();
+
+						}
+					}
+				);
+				
+				
+
+				//ledManager.off();
+				//delay(SAMPLE_DELAY_MS);
+			}
+			ledManager.off();
+			m_Logger.debug("Calculating magnetometer calibration data...");
+
+			float M_BAinv[4][3];
+			magneto->current_calibration(M_BAinv);
+			delete magneto;
+
+			m_Logger.debug("[INFO] Magnetometer calibration matrix:");
+			m_Logger.debug("{");
+			for (int i = 0; i < 3; i++) {
+				m_calibration.M_B[i] = M_BAinv[0][i];
+				m_calibration.M_Ainv[0][i] = M_BAinv[1][i];
+				m_calibration.M_Ainv[1][i] = M_BAinv[2][i];
+				m_calibration.M_Ainv[2][i] = M_BAinv[3][i];
+				m_Logger.debug(
+					"  %f, %f, %f, %f",
+					M_BAinv[0][i],
+					M_BAinv[1][i],
+					M_BAinv[2][i],
+					M_BAinv[3][i]
+				);
+			}
+			m_Logger.debug("}");
+
+		} else {
+			m_Logger.debug("[INFO] Magnetometer disabled. Skipping calibration.");
+		}
+
 	}
 
 	//figure out how fast our IMUs can go.

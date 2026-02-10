@@ -108,7 +108,12 @@ public:
 
 
 		if (!(readRegister(LSM6DS3_WHO_AM_I_REG) == 0x6C || readRegister(LSM6DS3_WHO_AM_I_REG) == 0x69))
-		{
+		{			
+			// while(1) {
+			// 	uint8_t output = readRegister(LSM6DS3_WHO_AM_I_REG);
+			// 	Serial.printf("Address: %d\n", output);
+			// 	delay(500);
+			// }
 			end();
 			return 0;
 		}

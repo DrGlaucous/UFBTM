@@ -25,6 +25,7 @@
 
 // BMI160 magnetometer type, applies to both main and aux trackers, mixed types are not
 // supported currently. If only 1 out of 2 trackers has a mag, the tracker without a mag
+// note: this now also applies to the LSM6DS3 IMU, with potential for other IMUs to work with it as well. (but I don't have those to test with)
 // should still function normally. NOT USED if USE_6_AXIS == true. Pick one:
 // #define BMI160_MAG_TYPE BMI160_MAG_TYPE_HMC
 // #define BMI160_MAG_TYPE BMI160_MAG_TYPE_QMC

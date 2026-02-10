@@ -26,7 +26,7 @@
 // ================================================
 
 // Set parameters of IMU and board used
-#define IMU IMU_BMI270
+#define IMU IMU_LSM6DS3
 #define SECOND_IMU IMU_BMI160
 #define BOARD BOARD_LOLIN_C3_MINI
 #define IMU_ROTATION DEG_270
@@ -39,15 +39,30 @@
 
 
 #include "sensors/axisremap.h"
+// #define BMI160_AXIS_REMAP_PRIMARY AXIS_REMAP_BUILD( \
+//   AXIS_REMAP_USE_X, \
+//   AXIS_REMAP_USE_YN, \
+//   AXIS_REMAP_USE_ZN, \
+//   \
+// 	AXIS_REMAP_USE_X, \
+// 	AXIS_REMAP_USE_Y, \
+// 	AXIS_REMAP_USE_ZN  \
+// )
+
+
+
+//for testing
 #define BMI160_AXIS_REMAP_PRIMARY AXIS_REMAP_BUILD( \
   AXIS_REMAP_USE_X, \
-  AXIS_REMAP_USE_YN, \
-  AXIS_REMAP_USE_ZN, \
+  AXIS_REMAP_USE_Y, \
+  AXIS_REMAP_USE_Z, \
   \
 	AXIS_REMAP_USE_X, \
 	AXIS_REMAP_USE_Y, \
-	AXIS_REMAP_USE_ZN  \
+	AXIS_REMAP_USE_Z  \
 )
+
+
 
 //SECONDARY
 #define BMI160_AXIS_REMAP_SECONDARY AXIS_REMAP_BUILD( \

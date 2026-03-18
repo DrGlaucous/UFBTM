@@ -107,8 +107,8 @@ struct LSM6DSO : LSM6DSOutputHandler<I2CImpl> {
 		return LSM6DSOutputHandler<I2CImpl>::template getDirectTemp<Regs>();
 	}
 
-	template <typename AccelCall, typename GyroCall>
-	void bulkRead(AccelCall&& processAccelSample, GyroCall&& processGyroSample) {
+	template <typename AccelCall, typename GyroCall, typename MagCall>
+	void bulkRead(AccelCall&& processAccelSample, GyroCall&& processGyroSample, MagCall&& processMagSample) {
 		LSM6DSOutputHandler<I2CImpl>::template bulkRead<AccelCall, GyroCall, Regs>(
 			processAccelSample,
 			processGyroSample,

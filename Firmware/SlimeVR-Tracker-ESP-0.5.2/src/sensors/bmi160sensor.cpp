@@ -147,6 +147,11 @@ void BMI160Sensor::motionSetup() {
 				break;
 
 			case SlimeVR::Configuration::SensorConfigType::NONE:
+
+				//if not preset, use factory value to determine mag status
+				magStatus = USE_6_AXIS ? MagnetometerStatus::MAG_DISABLED
+									: MagnetometerStatus::MAG_ENABLED;
+
 				m_Logger.warn(
 					"No calibration data found for sensor %d, ignoring...",
 					sensorId
@@ -155,7 +160,7 @@ void BMI160Sensor::motionSetup() {
 				break;
 
 			default:
-				//if not preset, use factory value to determine mag status
+				//see above
 				magStatus = USE_6_AXIS ? MagnetometerStatus::MAG_DISABLED
 									: MagnetometerStatus::MAG_ENABLED;
 
@@ -297,7 +302,7 @@ void BMI160Sensor::motionSetup() {
 	);
 
 
-	//calibrate the magnetometer if enabled
+	//initialize the magnetometer if enabled
 	if(magStatus == MagnetometerStatus::MAG_ENABLED) {
 		#if BMI160_MAG_TYPE == BMI160_MAG_TYPE_HMC
 			initHMC(BMI160_MAG_RATE);
@@ -1017,6 +1022,7 @@ void BMI160Sensor::applyAccelCalibrationAndScale(sensor_real_t Axyz[3]) {
 	Axyz[2] *= BMI160_ASCALE;
 }
 
+//I don't think we actually have scale factors here
 void BMI160Sensor::applyMagCalibrationAndScale(sensor_real_t Mxyz[3]) {
 //#if !USE_6_AXIS
 // apply offsets and scale factors from Magneto
@@ -1472,6 +1478,7 @@ void BMI160Sensor::setFlag(uint16_t flagId, bool state) {
 		magStatus = state ? MagnetometerStatus::MAG_ENABLED
 						  : MagnetometerStatus::MAG_DISABLED;
 
+		//update backend settings
 		SlimeVR::Configuration::SensorConfig config;
 		config.type = SlimeVR::Configuration::SensorConfigType::BMI160;
 		config.data.bmi160 = m_Config;

@@ -309,6 +309,10 @@ void Configuration::print() {
 					"            Temperature: %f",
 					c.data.sfusion.temperature
 				);
+				m_Logger.info(
+					"            Magnetometer: %d",
+					c.data.sfusion.magEnabled
+				);
 				break;
 
 			case SensorConfigType::ICM20948:

@@ -67,6 +67,9 @@ struct SoftFusionSensorConfig {
 	// calibration temperature for dynamic compensation
 	float temperature;
 
+	// true if the magnetometer should be used for compensation
+	bool magEnabled;
+	
 	// real measured sensor sampling rate
 	float A_Ts;
 	float G_Ts;

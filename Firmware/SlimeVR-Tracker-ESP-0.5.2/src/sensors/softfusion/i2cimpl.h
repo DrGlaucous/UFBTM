@@ -73,6 +73,18 @@ struct I2CImpl {
 		I2Cdev::writeBytes(m_devAddr, regAddr, size, buffer);
 	}
 
+	//these two are new: I shoehorned the custom device address back in there
+	void writeRegAddr(uint8_t devAddr, uint8_t regAddr, uint8_t value) const {
+		I2Cdev::writeByte(devAddr, regAddr, value);
+	}
+	uint8_t readRegAddr(uint8_t devAddr, uint8_t regAddr) const {
+		uint8_t buffer = 0;
+		I2Cdev::readByte(devAddr, regAddr, &buffer);
+		return buffer;
+	}
+
+
+	
 private:
 	uint8_t m_devAddr;
 };

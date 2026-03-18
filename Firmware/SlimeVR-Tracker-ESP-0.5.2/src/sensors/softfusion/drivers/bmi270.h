@@ -244,7 +244,7 @@ struct BMI270 {
 		for (uint16_t pos = 0; pos < sizeof(bmi270_firmware);) {
 			// tell the device current position
 
-			// this thing is little endian, but it requires address in bizzare form
+			// this thing is little endian, but it requires address in bizarre form
 			// LSB register is only 4 bits, while MSB register is 8bits
 			// also value requested is in words (16bit) not in bytes (8bit)
 
@@ -391,8 +391,8 @@ struct BMI270 {
 		return to_ret;
 	}
 
-	template <typename AccelCall, typename GyroCall>
-	void bulkRead(AccelCall&& processAccelSample, GyroCall&& processGyroSample) {
+	template <typename AccelCall, typename GyroCall, typename MagCall>
+	void bulkRead(AccelCall&& processAccelSample, GyroCall&& processGyroSample, MagCall&& processMagSample) {
 		const auto fifo_bytes = i2c.readReg16(Regs::FifoCount);
 
 		const auto bytes_to_read = std::min(

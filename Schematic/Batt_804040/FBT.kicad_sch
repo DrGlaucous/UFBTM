@@ -2675,7 +2675,7 @@
 	)
 	(rectangle
 		(start 172.72 88.9)
-		(end 283.21 158.75)
+		(end 283.21 157.48)
 		(stroke
 			(width 0)
 			(type default)
@@ -2732,6 +2732,17 @@
 			(type none)
 		)
 		(uuid bbaf5735-f3d8-4f6c-b055-88f2d33a7c2c)
+	)
+	(text "We may or may not want to connect the 5v input\nbetween the ESP32 and LX-LBES charger.\nHaving it connected allows us to daisy-chain trackers for charging and\ncharge off both plugs at the cost of always powering the\nESP32 when plugged in (which wastes energy and charges slower)."
+		(exclude_from_sim no)
+		(at 174.752 150.876 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "24e11b5b-5b5b-4ff3-a4d4-4085c0e9bf8b")
 	)
 	(text "IMU Extender"
 		(exclude_from_sim no)
@@ -2794,17 +2805,6 @@
 		)
 		(uuid "77d512a5-8686-41c2-af12-a11634d4cdb1")
 	)
-	(text "Charging can only be done through the\nUSB bus on the charge manager\n(diodes prevent charging using the firmware port)\nno way to allow higher voltage to pass while blocking lower voltage\nCould a 4.8v zener do this? (replacing the Schottky diode with the properly rated\nzener is all that would need to be done)"
-		(exclude_from_sim no)
-		(at 175.006 151.638 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "8e599fd4-9b49-48be-9f37-fa4ff6179234")
-	)
 	(text "the on-board LDO on the C3 breakout:\n(ME6211C33M5)\nCan supply everything through this...\nCould also supply each module with the 5 volts outright for cooler operation\nMay supply 3v3 to the external tracker so we don't have a risk of frying anything\nif we use a TRRS connector"
 		(exclude_from_sim no)
 		(at 119.888 80.264 0)
@@ -2825,7 +2825,7 @@
 		)
 		(uuid "c3c7311d-7e86-4989-8a61-0faa55c79c12")
 	)
-	(text "The GY-27X must be connected to the BMI's 3v3 output so that its logic levels are 3v3.\nConnecting it to 5v is OK for the GY-273, but the GY-271 will alter i2c logic levels to output 5V,\nwhich may hurt the BMI160\n\nDepending on the IMU board, it may have an onboard LDO to serve as our\nsupply for when the ESP32 is powered from battery, allowing us to use that instead\nof the descrete LDO on the board."
+	(text "The GY-27X must be connected to the BMI's 3v3 output so that its logic levels are 3v3.\nConnecting it to 5v is OK for the GY-273, but the GY-271 will alter i2c logic levels to output 5V,\nwhich may hurt the BMI160\n\nDepending on the IMU board, it may have an onboard LDO to serve as our\nsupply for when the ESP32 is powered from battery, allowing us to use that instead\nof the descrete LDO on the board (in this case, the HT7333)."
 		(exclude_from_sim no)
 		(at 185.166 21.082 0)
 		(effects
@@ -2895,6 +2895,18 @@
 		(uuid "4e6cedd8-4b9a-413f-bd3c-c644a83b42e6")
 	)
 	(junction
+		(at 97.79 109.22)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5cd8bfe1-473d-4d0d-9a4c-c9ad0121ce70")
+	)
+	(junction
+		(at 87.63 121.92)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "81168cf0-1159-4f9b-8119-de3c469eeedb")
+	)
+	(junction
 		(at 190.5 82.55)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2907,22 +2919,28 @@
 		(uuid "877916ae-e189-4d33-92f7-ffc763c36c6a")
 	)
 	(junction
-		(at 191.77 130.81)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "8c129040-e2fb-416b-b16a-0d7a91f65148")
-	)
-	(junction
 		(at 227.33 68.58)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8c6d8b05-0c78-45ce-8728-2cb8bff8734d")
 	)
 	(junction
+		(at 180.34 130.81)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "8d6ec159-d6ed-4113-8ade-f4aed472b17d")
+	)
+	(junction
 		(at 128.27 109.22)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "965c8387-efe2-4afd-bbb4-b0373acc1aea")
+	)
+	(junction
+		(at 191.77 130.81)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "96ff3fd8-d606-4303-92fc-930b891c28d4")
 	)
 	(junction
 		(at 187.96 80.01)
@@ -3194,6 +3212,26 @@
 	)
 	(wire
 		(pts
+			(xy 180.34 132.08) (xy 180.34 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2a7e4a22-3ffb-4bb8-a004-35fa5727de8a")
+	)
+	(wire
+		(pts
+			(xy 97.79 109.22) (xy 99.06 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2e800078-7707-468a-9183-ba07a29dbe8f")
+	)
+	(wire
+		(pts
 			(xy 243.84 133.35) (xy 251.46 133.35)
 		)
 		(stroke
@@ -3294,7 +3332,7 @@
 	)
 	(wire
 		(pts
-			(xy 95.25 109.22) (xy 99.06 109.22)
+			(xy 95.25 109.22) (xy 97.79 109.22)
 		)
 		(stroke
 			(width 0)
@@ -3311,16 +3349,6 @@
 			(type default)
 		)
 		(uuid "472512c3-ba4d-4714-bded-404f7e6aefb6")
-	)
-	(wire
-		(pts
-			(xy 191.77 130.81) (xy 193.04 130.81)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "47b23d71-a077-4887-ac62-808f25d707df")
 	)
 	(wire
 		(pts
@@ -3381,6 +3409,16 @@
 			(type default)
 		)
 		(uuid "55fea778-98ce-41ad-97c9-37065ea01fc7")
+	)
+	(wire
+		(pts
+			(xy 97.79 105.41) (xy 97.79 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5ba46ebb-7dd9-4507-9203-86f13de05e55")
 	)
 	(wire
 		(pts
@@ -3524,7 +3562,27 @@
 	)
 	(wire
 		(pts
-			(xy 189.23 130.81) (xy 191.77 130.81)
+			(xy 191.77 130.81) (xy 193.04 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8bd32f02-85df-48cf-bcef-6d26b31316c9")
+	)
+	(wire
+		(pts
+			(xy 190.5 130.81) (xy 191.77 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9350d669-5246-491d-8020-3dc4bf3aca71")
+	)
+	(wire
+		(pts
+			(xy 177.8 130.81) (xy 180.34 130.81)
 		)
 		(stroke
 			(width 0)
@@ -3564,6 +3622,16 @@
 	)
 	(wire
 		(pts
+			(xy 138.43 121.92) (xy 154.94 121.92)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a12fa6b5-58ea-468a-9fd8-9ba87e1b50dd")
+	)
+	(wire
+		(pts
 			(xy 185.42 68.58) (xy 185.42 77.47)
 		)
 		(stroke
@@ -3581,16 +3649,6 @@
 			(type default)
 		)
 		(uuid "a7049fb9-2b19-4e9a-aa02-108b74902c20")
-	)
-	(wire
-		(pts
-			(xy 138.43 121.92) (xy 154.94 121.92)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a8f2a735-913a-4c35-a486-fae8ed38a7a0")
 	)
 	(wire
 		(pts
@@ -3701,6 +3759,26 @@
 			(type default)
 		)
 		(uuid "d1f5ed46-24de-472c-8784-1b726007c908")
+	)
+	(wire
+		(pts
+			(xy 191.77 124.46) (xy 191.77 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d251894b-2200-4265-9e64-a06af7b42c46")
+	)
+	(wire
+		(pts
+			(xy 180.34 130.81) (xy 182.88 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d50069e8-0ec9-497b-9194-f85a7129cd99")
 	)
 	(wire
 		(pts
@@ -4128,22 +4206,22 @@
 	)
 	(global_label "ESP32_5V5"
 		(shape input)
-		(at 189.23 130.81 180)
+		(at 177.8 130.81 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right)
+			(justify left)
 		)
 		(uuid "91094bb1-2219-46f3-a842-33732752da39")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 175.7221 130.81 0)
+			(at 177.8 117.3021 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
+				(justify left)
 				(hide yes)
 			)
 		)
@@ -4377,16 +4455,15 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 191.77 130.81 0)
+		(at 180.34 132.08 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "103a5737-73a1-4ba6-b03b-1a94848cc88c")
 		(property "Reference" "#FLG06"
-			(at 191.77 128.905 0)
+			(at 180.34 133.985 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4395,7 +4472,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 191.77 125.73 0)
+			(at 179.07 136.398 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4403,7 +4480,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 191.77 130.81 0)
+			(at 180.34 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4412,7 +4489,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 191.77 130.81 0)
+			(at 180.34 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4421,7 +4498,7 @@
 			)
 		)
 		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 191.77 130.81 0)
+			(at 180.34 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6047,6 +6124,73 @@
 		)
 	)
 	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 186.69 130.81 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "968bf0e5-2d3e-4485-a1bf-ee791ee95716")
+		(property "Reference" "JP2"
+			(at 186.69 128.016 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "F"
+			(at 186.69 125.476 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 186.69 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 186.69 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Solder Jumper, 2-pole, open"
+			(at 186.69 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "b1d8f83b-8f94-4647-8fe2-8f5fef6a5e46")
+		)
+		(pin "1"
+			(uuid "0fa25cee-285c-40b6-8337-233e3e9f1f87")
+		)
+		(instances
+			(project "FBT"
+				(path "/b59d625c-f89d-4113-8c77-569da8af0dbc"
+					(reference "JP2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Jumper:Jumper_3_Bridged12")
 		(at 128.27 102.87 270)
 		(mirror x)
@@ -6486,6 +6630,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 97.79 105.41 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "bbe69735-20db-494a-9dce-fe05aa821e30")
+		(property "Reference" "#FLG08"
+			(at 97.79 103.505 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 99.06 101.092 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 97.79 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 97.79 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 97.79 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5f093a89-22b9-432d-851d-30488cf687aa")
+		)
+		(instances
+			(project "FBT"
+				(path "/b59d625c-f89d-4113-8c77-569da8af0dbc"
+					(reference "#FLG08")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 229.87 41.91 270)
 		(unit 1)
@@ -6547,6 +6756,71 @@
 			(project ""
 				(path "/b59d625c-f89d-4113-8c77-569da8af0dbc"
 					(reference "#PWR04")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 87.63 121.92 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c972c8ec-5e9b-4cb2-8136-bc8843c909e9")
+		(property "Reference" "#FLG07"
+			(at 87.63 123.825 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 86.36 126.238 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 87.63 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 87.63 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 87.63 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3852e988-93e0-44a5-bf46-f3aa62f66525")
+		)
+		(instances
+			(project "FBT"
+				(path "/b59d625c-f89d-4113-8c77-569da8af0dbc"
+					(reference "#FLG07")
 					(unit 1)
 				)
 			)
@@ -6951,6 +7225,71 @@
 			(project "FBT"
 				(path "/b59d625c-f89d-4113-8c77-569da8af0dbc"
 					(reference "R2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 191.77 124.46 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f7b3ea8c-2460-4653-a20a-b97bfa327362")
+		(property "Reference" "#FLG03"
+			(at 191.77 122.555 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 193.04 120.142 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 191.77 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 191.77 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 191.77 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "db8c5a64-cbaf-4775-af74-9c8aa21fc600")
+		)
+		(instances
+			(project "FBT"
+				(path "/b59d625c-f89d-4113-8c77-569da8af0dbc"
+					(reference "#FLG03")
 					(unit 1)
 				)
 			)

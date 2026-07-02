@@ -838,9 +838,10 @@ public:
 		m_calibration.M_Ts = millisFromStart / (magSamples * 1000.0);
 
 		m_Logger.debug(
-			"Gyro frequency %fHz, accel frequency: %fHz",
+			"Gyro frequency %fHz, accel frequency: %fHz, mag frequency: %fHz",
 			1.0 / m_calibration.G_Ts,
-			1.0 / m_calibration.A_Ts
+			1.0 / m_calibration.A_Ts,
+			1.0 / m_calibration.M_Ts,
 		);
 		ledManager.off();
 

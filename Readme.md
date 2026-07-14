@@ -5,10 +5,15 @@
 # Mr. Tracker
 A cheap, compact, and open-source realtime tracking module built with slimeVR and the ESP32.
 
-![image](./Media/all.jpg)
-
+<div style="display: flex;">
+<img src="./Media/all.jpg" style="width: 50%; height: auto; margin: auto auto;">
+</div>
 
 ## Design goal
+<details open>
+<summary>
+    Details
+</summary>
 
 The components for these trackers have been chosen to be exclusively through-hole for ease of assembly (at a slight cost of a larger size)
 
@@ -25,14 +30,14 @@ Assembly should be quick and reliable with no need for SMD or rework, which is s
 
 The module uses TRRS (4 ring) aux jacks to connect between the main board and its extender, providing a robust connection that can last many plug cycles and be easily replaced if the plug *does* go bad.
 
+</details>
+
 ## Compatibility
 
-
-<figure align = "center">
-<img src="./Media/flipped.jpg" style="width:50%">
-</figure>
-
-The PCBs on this tracker are designed to be as modular as possible, accommodating a wide range of components based on price and availability.
+<details>
+<summary>
+    MCU
+</summary>
 
 
 ### MCU
@@ -61,7 +66,15 @@ For the microcontroller, this board can support anything with the "superMini" fo
 <figcaption align = "center"><i>Note how the power pins are on the opposite side from the normal superMini board</i></figcaption>
 </figure>
 
+</details>
+
 ---
+
+
+<details>
+<summary>
+    IMU
+</summary>
 
 ### IMU
 The IMU can be anything that matches the BMI160 breakout form-factor.
@@ -91,7 +104,16 @@ This includes:
     </div>
 </div>
 
+</details>
+
 ---
+
+
+<details>
+<summary>
+    Magnetometer
+</summary>
+
 
 ### Magnetometer
 
@@ -102,7 +124,17 @@ These boards are common enough, but tend to have several variants of actual magn
 - QMC5883P
 All these are supported by my fork of the slimeVR firmware, but they have distinct registers, so you will have to check which one you have. (as-of-writing, the QMC5883P is the most common of these)
 
+
+
+</details>
+
+
 ---
+
+<details>
+<summary>
+    Charger
+</summary>
 
 ### Charger
 
@@ -114,8 +146,15 @@ Just make sure it's the `LX-LBES` module and not the other variants like the `LX
 <img src="./Reference/LX-LBES.jpeg" style="width:50%">
 </figure>
 
+</details>
 
 ---
+
+<details>
+<summary>
+    Charger
+</summary>
+
 
 ### Battery
 
@@ -126,6 +165,18 @@ This tracker is designed to work with 2 distinct battery sizes:
 Unfortunately, I have not modeled a housing for the 18650 variant yet.
 
 18650 batteries are cheaper than the 804040s, especially if you get them used from a place like [batteryhookup](https://batteryhookup.com/), where they cost about 50c per battery. Depending on the quality of the cell, they can also hold more charge than the 804040s, but as a trade-off are inconveniently shaped for trackers. The Mrs. Tracker PCB is designed to accommodate these long, skinny batteries as best as possible.
+
+
+
+<figure align = "center">
+<img src="./Media/flipped.jpg" style="width:50%">
+</figure>
+
+The PCBs on this tracker are designed to be as modular as possible, accommodating a wide range of components based on price and availability.
+
+
+</details>
+
 
 
 ---

@@ -164,7 +164,7 @@ Mini USB 8P
 
 potential screw type:
 m2 x5mm plastic boring screw
-
+(ended up purchasing m2.6x6mm the first round)
 
 final-ish BOM:
 

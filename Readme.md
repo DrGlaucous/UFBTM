@@ -180,6 +180,21 @@ The PCBs on this tracker are designed to be as modular as possible, accommodatin
 
 
 ---
+## Jumper configuration
+
+Rev. 3 boards have several jumpers on the underside that changes how the device can be powered so a wider range of parts can be used.
+
+Depending on the quality of the IMU breakout board, the linear regulator and voltage smoothing capacitor may not be needed. This varies more than you'd think with distributors though, so it's not always safe to count on it. Additionally, some versions of the IMU breakout might not even have an integrated regulator at all, making the discrete regulator required.
+
+- Jumpers `A`, `B`, `C`, and `D` alter the pinout for the voltage regulator and allow one with any pin arrangement to be installed.
+- Connecting jumper `E` allows the board to use the voltage regulator on the IMU instead of the discrete one.
+- Connecting jumper `F` allows the ESP32's USB port to charge the battery. The upshot is that charging the tracker will *always* turn on the ESP32, wasting power.
+
+- *bonus:* removing the backvoltage protection diode on the ESP32 board will... uh...
+
+
+
+
 ***Note: The current tracker version has a problem that requires a bodge wire to solve. This is being fixed in the latest in-development PCB design.***
 
 

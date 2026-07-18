@@ -28,7 +28,7 @@ This idea is by no means novel; I'm not even the first person to use the compone
 
 Assembly should be quick and reliable with no need for SMD or rework, which is something other modules of this size can't do.
 
-The module uses TRRS (4 ring) aux jacks to connect between the main board and its extender, providing a robust connection that can last many plug cycles and be easily replaced if the plug *does* go bad.
+The module uses TRRS (4 ring) aux jacks to connect between the main board and its extender, providing a robust connection that can last many plug cycles and be easily replaced if the plug goes bad.
 
 </details>
 
@@ -58,7 +58,7 @@ For the microcontroller, this board can support anything with the "superMini" fo
 </div>
 
 
-**Note: check to make sure the +5v, GND, and +3.3v on the board match the "standard" superMini layout as seen above! Some boards like to mix them around, like the one below.**
+**Note: check to make sure the +5v, GND, and +3.3v on the board match the "standard" superMini layout as seen above! Some boards like to mix them around, like the one below. That one WILL NOT WORK.**
 
 
 <figure align = "center">
@@ -152,7 +152,7 @@ Just make sure it's the `LX-LBES` module and not the other variants like the `LX
 
 <details>
 <summary>
-    Charger
+    Battery
 </summary>
 
 
@@ -172,8 +172,6 @@ Unfortunately, I have not modeled a housing for the 18650 variant yet.
 <img src="./Media/flipped.jpg" style="width:50%">
 </figure>
 
-The PCBs on this tracker are designed to be as modular as possible, accommodating a wide range of components based on price and availability.
-
 
 </details>
 
@@ -181,6 +179,11 @@ The PCBs on this tracker are designed to be as modular as possible, accommodatin
 
 ---
 ## Jumper configuration
+
+<details>
+<summary>
+    Details
+</summary>
 
 Rev. 3 boards have several jumpers on the underside that changes how the device can be powered so a wider range of parts can be used.
 
@@ -190,12 +193,29 @@ Depending on the quality of the IMU breakout board, the linear regulator and vol
 - Connecting jumper `E` allows the board to use the voltage regulator on the IMU instead of the discrete one.
 - Connecting jumper `F` allows the ESP32's USB port to charge the battery. The upshot is that charging the tracker will *always* turn on the ESP32, wasting power.
 
-- *bonus:* removing the backvoltage protection diode on the ESP32 board will... uh...
 
 
 
+The following is a table of all the possible voltage regulator pinouts and their corresponding jumper configs. An "O" means to leave the jumper at default (bridging positions 1 and 2), an "X" means to cut the jumper and flip it (bridging positions 2 and 3). "Flip" means to solder the regulator into the socket backwards 
+|Pinout|A|B|C|D|Flip|
+|-|-|-|-|-|-|
+|<img src="./Media/RegulatorPins/GIO.PNG" style="width:200px">|O|O|O|O|O|
+|<img src="./Media/RegulatorPins/GOI.PNG" style="width:200px">|O|O|X|X|O|
+|<img src="./Media/RegulatorPins/IGO.PNG" style="width:200px">|X|X|O|O|O|
+|<img src="./Media/RegulatorPins/IOG.PNG" style="width:200px">|X|X|O|O|X|
+|<img src="./Media/RegulatorPins/OGI.PNG" style="width:200px">|O|O|X|X|X|
+|<img src="./Media/RegulatorPins/OIG.PNG" style="width:200px">|O|O|O|O|X|
 
-***Note: The current tracker version has a problem that requires a bodge wire to solve. This is being fixed in the latest in-development PCB design.***
+
+In a nutshell,
+- AB flip 1 and 2,
+- CD flip 2 and 3
+
+
+</details>
+
+---
+
 
 
 So like always,
